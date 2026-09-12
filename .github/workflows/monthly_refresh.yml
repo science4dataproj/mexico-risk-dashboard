@@ -8,6 +8,9 @@ on:
     - cron: "0 9 5 * *"
   workflow_dispatch:  # allows manually triggering a run from the Actions tab, for testing
 
+permissions:
+  contents: write
+
 jobs:
   refresh:
     runs-on: ubuntu-latest
