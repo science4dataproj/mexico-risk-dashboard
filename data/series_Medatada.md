@@ -194,6 +194,17 @@ independent of any single series.
    to programmatically flag staleness (e.g., "SHRFSP last manually
    updated: [date] — over 14 months ago") — never as a substitute value.
 
+10. **Monthly data refresh runs fully unattended — no manual approval
+   gate.** An earlier iteration used a `production` GitHub Environment
+   requiring manual approval before the job could run at all, which
+   contradicted the actual goal (updates should complete without the
+   maintainer's presence). The design was revised: automated tests
+   (`pytest`) are the real safety gate — they run before the PR is
+   opened, and again as a required status check before GitHub
+   auto-merges it. This is a deliberate trade-off: full automation,
+   backed by test coverage, instead of a human-in-the-loop approval
+   that would defeat the point of automating the pipeline at all.
+
 ---
 
 ## Appendix: Confirmed Data Ranges (as of first successful pull, 2026-09-12)

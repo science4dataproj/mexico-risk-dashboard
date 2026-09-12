@@ -2,19 +2,16 @@ name: Monthly data refresh
 
 on:
   schedule:
-    # Runs at 09:00 UTC on the 5th of every month.
-    # Day 5 (not day 1) gives INEGI/Banxico a few days' buffer to
-    # publish that month's data after month-end.
     - cron: "0 9 5 * *"
-  workflow_dispatch:  # allows manually triggering a run from the Actions tab, for testing
+  workflow_dispatch:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    environment: production
 
     steps:
       - name: Check out repository
@@ -41,13 +38,23 @@ jobs:
       - name: Rebuild unified panel
         run: python -m src.transform.clean
 
-      - name: Run tests before committing
+      - name: Run tests before opening PR
         run: pytest tests/ -v
 
-      - name: Commit and push updated data
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/raw/ data/processed/
-          git diff --staged --quiet || git commit -m "data: automated monthly refresh $(date -u +%Y-%m-%d)"
-          git push
+      - name: Create Pull Request with updated data
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.AUTOMATION_PAT }}
+          commit-message: "data: automated monthly refresh"
+          branch: automated/monthly-data-refresh
+          title: "Automated monthly data refresh"
+          body: "Refreshed Banxico and INEGI data via scheduled workflow. Tests passed before this PR was opened; auto-merge will complete once required status checks pass."
+          delete-branch: true
+
+      - name: Enable auto-merge
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          GH_TOKEN: ${{ secrets.AUTOMATION_PAT }}
+          PR_URL: ${{ steps.cpr.outputs.pull-request-url }}
