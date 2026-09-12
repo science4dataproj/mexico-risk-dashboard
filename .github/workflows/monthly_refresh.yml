@@ -1,0 +1,49 @@
+name: Monthly data refresh
+
+on:
+  schedule:
+    # Runs at 09:00 UTC on the 5th of every month.
+    # Day 5 (not day 1) gives INEGI/Banxico a few days' buffer to
+    # publish that month's data after month-end.
+    - cron: "0 9 5 * *"
+  workflow_dispatch:  # allows manually triggering a run from the Actions tab, for testing
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Fetch Banxico data
+        run: python -m src.ingestion.banxico
+        env:
+          BANXICO_TOKEN: ${{ secrets.BANXICO_TOKEN }}
+
+      - name: Fetch INEGI data
+        run: python -m src.ingestion.inegi
+        env:
+          INEGI_TOKEN: ${{ secrets.INEGI_TOKEN }}
+
+      - name: Rebuild unified panel
+        run: python -m src.transform.clean
+
+      - name: Run tests before committing
+        run: pytest tests/ -v
+
+      - name: Commit and push updated data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/raw/ data/processed/
+          git diff --staged --quiet || git commit -m "data: automated monthly refresh $(date -u +%Y-%m-%d)"
+          git push
