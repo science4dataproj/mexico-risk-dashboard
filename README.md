@@ -23,15 +23,7 @@ shows, with documented uncertainty and limitations, not to argue for or
 against any policy position.
 
 ## Architecture
-Banxico API ─┐
-INEGI API ───┼──> ingestion (automated, monthly cron) ──> raw snapshots (data/raw/)
-SHCP (manual)┘ 
-│
-v
-transform/clean.py (unify to tidy panel)
-│
-v
-data/processed/panel_long.csv
+Banxico API(automated, monthly cron) + INEGI API(automated, monthly cron) +  SHCP (manual) -> raw snapshots (data/raw/) -> transform/clean.py (unify to tidy panel) -> data/processed/panel_long.csv
 
 
 - **Ingestion:** Banxico (SIE API) and INEGI (Indicadores API) are fully
