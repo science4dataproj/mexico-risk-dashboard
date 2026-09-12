@@ -123,3 +123,17 @@ independent of any single series.
    messages, and repository documentation are in English (international/
    remote hiring audience). Substack content remains in Spanish
    (Mexican audience).
+
+### Confirmed data ranges (as of first successful pull, 2026-09-12)
+
+| Source | Series/Indicator | Confirmed range | Observations |
+|---|---|---|---|
+| Banxico | SF43718 (FX FIX) | 1991-11 to 2026-09 | 8,756 (daily) |
+| Banxico | SF60633 (CETES 28d) | 2006-09 to 2026-09 | 1,043 (weekly) |
+| Banxico | SF61745 (target rate) | 2008-01 to 2026-09 | 6,714 (daily) |
+| Banxico | SF43707 (reserves) | 1995-12 to 2026-09 | 1,602 (weekly) |
+| Banxico | SF311408 (M1) | 2000-12 to 2026-07 | 308 (monthly) |
+| Banxico | SF311418 (M2) | 2000-12 to 2026-07 | 308 (monthly) |
+| INEGI | 735879 (quarterly GDP) | 1980-Q1 to 2026-Q2 | 186 (quarterly) |
+| INEGI | 910392 (CPI) | 1969-01 to 2026-08 | 692 (monthly) |
+| INEGI | 444603 (unemployment) | 2005-01 to 2026-07 | 259 (monthly) — confirms documented ENOE comparability limitation |
