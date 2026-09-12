@@ -46,9 +46,9 @@ https://www.inegi.org.mx/servicios/api_indicadores.html
 
 | Key (`config.py`) | Indicator ID | Description | Native frequency | Notes |
 |---|---|---|---|---|
-| `unemployment_rate` | 444603 | National unemployment rate (Tasa de desocupación), population 15+, original series | Monthly | Sourced from ENOE. Confirmed via test query 2026-09-12: value 2.9% for 2026-07, consistent with independently checked external estimates for the same period. **This series is only methodologically consistent from 2005 onward** — see Comparability Limitations below. |
+| `unemployment_rate` | 444603 | National unemployment rate (Tasa de desocupación), population 15+, original series | Monthly | Sourced from ENOE. Confirmed via test query 2026-09-12: value 2.9% for 2026-07, consistent with independently checked external estimates for the same period. **This series is only methodologically consistent from 2005 onward** — see Decisions Log #3. |
 | `quarterly_gdp` | 735879 | GDP, constant 2018 pesos ("Valores a precios de 2018"), original series | Quarterly | Confirmed real (not nominal) by growth-rate sanity check: ~2.5x growth from 1980 to 2026 is consistent with ~2% average real annual growth, whereas nominal GDP would have grown by orders of magnitude given Mexico's historical high-inflation periods (1980s-1990s). |
-| `cpi` | 910392 | INPC — General Index (Índice general, not subyacente/no subyacente), monthly, base 2018 | Monthly | Deliberately chose the level/index, not any pre-calculated inflation rate variant, so that inflation rates are computed in-house with a documented method (see Decisions Log). |
+| `cpi` | 910392 | INPC — General Index (Índice general, not subyacente/no subyacente), monthly, base 2018 | Monthly | Deliberately chose the level/index, not any pre-calculated inflation rate variant, so that inflation rates are computed in-house with a documented method (see Decisions Log #1). |
 
 **Indicators explicitly rejected during series selection** (kept here so
 we don't re-investigate them by mistake later):
@@ -62,15 +62,66 @@ we don't re-investigate them by mistake later):
 
 ---
 
-## 3. SHCP (Public Debt / GDP)
+## 3. SHCP — Public Debt (SHRFSP, % of GDP)
 
-**Status:** Not yet implemented.
-**Access:** No formal REST API. Data is published as downloadable Excel/CSV
-files under "Estadísticas Oportunas de Finanzas Públicas." Ingestion will
-require direct file download + parsing rather than a standard API client.
-**Note:** This module will need more manual maintenance than the Banxico/
-INEGI ingestors, since source file structure/URLs may change without a
-versioned API contract.
+**Status:** Manually updated, ~once per year. NOT part of the automated
+cron pipeline — the source (presto.hacienda.gob.mx) is an interactive
+JSP dashboard with no export button, static file, or API. Scripting it
+would require full browser automation (Selenium/Playwright) disproportionate
+to a once-a-year update — deliberately not pursued (see Decisions Log #8).
+
+**Metric used:** Saldo Histórico de los Requerimientos Financieros del
+Sector Público (SHRFSP) — the broad public debt measure, as %GDP
+(SHCP's own calculation, base 2018 GDP). This is the correct metric per
+the project's original scope (broad debt, not just central government).
+
+### How to manually retrieve the data (repeat ~annually)
+
+1. Go to https://www.finanzaspublicas.hacienda.gob.mx/
+2. Click "Estadísticas Oportunas de Finanzas Públicas"
+   → opens http://presto.hacienda.gob.mx/EstoporLayout/estadisticas.jsp
+3. Click "Saldo Histórico de los Requerimientos Financieros del Sector
+   Público" — a popup shows available files (currently one file
+   covering 2000-2026).
+4. Select:
+   - Cuadro: **Saldo Multianual**
+   - Cifras en: **Porcentajes del PIB**
+   - Years: select full available range
+5. Copy the resulting table (row "Saldo histórico de los RFSP", the
+   aggregate, unqualified total — do NOT use the "Interno"/"Externo"
+   or sector-specific sub-rows) into
+   `data/raw/shcp_debt_pct_gdp_manual_{YYYY}.csv`.
+6. Preserve the footnotes exactly as published:
+   - n.d. = no disponible (not available)
+   - n.s. = no significativo (not significant)
+   - -o- = greater than 500 or less than -500 percent
+   - Figures are preliminary for the most recent year shown.
+
+**Data confirmed available:** 1990–2025 (2026 preliminary), annual.
+Note this starts 2 years after the project's general historical window
+(1988) — a minor, documented gap, not treated as an error.
+
+---
+
+## 4. World Bank Open Data API — Debt Fallback
+
+**Access:** Free, no token required.
+**Base URL:** `https://api.worldbank.org/v2/country/mx/indicator`
+**Indicator:** `GC.DOD.TOTL.GD.ZS` — "Central government debt, total (% of GDP)".
+
+**Role: freshness fallback / cross-check only — NEVER merged or
+substituted with SHRFSP.** These are different metrics by definition:
+SHRFSP is the broad measure (federal government + paraestatales +
+development banking + trusts + historical bailouts like IPAB);
+`GC.DOD.TOTL.GD.ZS` is central government only, a narrower scope. They
+will systematically differ, and that difference is expected, not an
+error. See Decisions Log #9 for how each is used.
+
+**Trade-off accepted:** annual frequency, with typical publication lag
+of 1-2 years (source is IMF/World Bank WDI, not real-time). Acceptable
+here because public debt/GDP is a slow-moving stock variable, not a
+high-frequency signal — losing monthly granularity costs little
+information for this specific indicator.
 
 ---
 
@@ -124,7 +175,28 @@ independent of any single series.
    remote hiring audience). Substack content remains in Spanish
    (Mexican audience).
 
-### Confirmed data ranges (as of first successful pull, 2026-09-12)
+8. **SHCP public debt is manually refreshed (~annual), not part of the
+   automated cron.** The source (presto.hacienda.gob.mx) is an
+   interactive dashboard without a stable static URL, export button, or
+   API, making full automation disproportionate to a once-a-year update.
+   This is a deliberate exception to the "fully automated pipeline"
+   design goal — documented rather than hidden, and paired with an
+   automated World Bank series as a lower-frequency, always-available
+   fallback (see #9).
+
+9. **Never merge or average the two public-debt metrics (SHRFSP vs.
+   World Bank central-government debt).** They measure different scopes
+   by definition and will systematically diverge — this is expected,
+   not an inconsistency to reconcile. Each is stored and labeled as a
+   distinct indicator (`debt_shrfsp_broad_pct_gdp` vs.
+   `debt_central_gov_narrow_pct_gdp`). SHRFSP is the primary indicator
+   used in the composite risk index. The World Bank series is used only
+   to programmatically flag staleness (e.g., "SHRFSP last manually
+   updated: [date] — over 14 months ago") — never as a substitute value.
+
+---
+
+## Appendix: Confirmed Data Ranges (as of first successful pull, 2026-09-12)
 
 | Source | Series/Indicator | Confirmed range | Observations |
 |---|---|---|---|
@@ -137,3 +209,4 @@ independent of any single series.
 | INEGI | 735879 (quarterly GDP) | 1980-Q1 to 2026-Q2 | 186 (quarterly) |
 | INEGI | 910392 (CPI) | 1969-01 to 2026-08 | 692 (monthly) |
 | INEGI | 444603 (unemployment) | 2005-01 to 2026-07 | 259 (monthly) — confirms documented ENOE comparability limitation |
+| SHCP | SHRFSP (%GDP) | 1990 to 2025 (2026 preliminary) | annual, manual |
