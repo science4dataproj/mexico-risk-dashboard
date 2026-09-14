@@ -146,7 +146,13 @@ def apply_multiple_testing_correction(results: pd.DataFrame, alpha: float = 0.05
     untouched and excluded from the correction.
     """
     results = results.copy()
-    results["p_value_adjusted"] = np.nan
+
+    # Defensive coercion: guarantees float64 dtype even if the input
+    # DataFrame arrived with p_value as dtype "object" (e.g. from
+    # concatenating rows that used Python None instead of np.nan for
+    # missing numeric values elsewhere in the pipeline).
+    results["p_value"] = pd.to_numeric(results["p_value"], errors="coerce")
+    results["p_value_adjusted"] = pd.Series(np.nan, index=results.index, dtype="float64")
     results["flag_significant"] = False
 
     has_pvalue = results["p_value"].notna()
