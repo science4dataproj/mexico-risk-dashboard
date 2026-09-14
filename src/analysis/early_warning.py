@@ -82,6 +82,7 @@ def infer_rolling_window_periods(series: pd.Series) -> int | None:
     """
     freq = infer_frequency_label(series)
     return FREQUENCY_ROLLING_WINDOWS.get(freq)  # None for "annual"/"unknown"
+
 def rolling_autocorr_lag1(series: pd.Series, window: int = EWS_ROLLING_WINDOW) -> pd.Series:
     """
     Lag-1 autocorrelation computed on a trailing rolling window.
