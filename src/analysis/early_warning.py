@@ -32,6 +32,57 @@ EWS_ROLLING_WINDOW = 24  # ~2 years of monthly data per rolling AC1/variance est
 MIN_ROLLING_POINTS_FOR_TREND = 12  # need enough rolling estimates to test a trend on them
 
 
+
+FREQUENCY_ROLLING_WINDOWS = {
+    "daily": 504,      # ~2 trading/calendar years
+    "weekly": 104,     # ~2 years
+    "monthly": 24,     # ~2 years
+    "quarterly": 8,    # ~2 years
+}
+
+MIN_TOTAL_OBS_FOR_EWS = 60  # below this, trend estimation is too unstable to report
+
+
+def infer_frequency_label(series: pd.Series) -> str:
+    """
+    Infers a series' native frequency from the median gap between
+    observations, so the rolling window used for critical-slowing-down
+    detection represents a consistent CALENDAR span (~2 years) across
+    series of very different native frequencies — a fixed period count
+    (e.g. "24 periods") means 24 days for a daily series but 2 years
+    for a monthly one, which would silently produce meaningless results
+    if left unadjusted.
+    """
+    clean = series.dropna().sort_index()
+    if len(clean) < 3:
+        return "unknown"
+    median_gap_days = clean.index.to_series().diff().dt.days.median()
+
+    if median_gap_days <= 3:
+        return "daily"
+    elif median_gap_days <= 10:
+        return "weekly"
+    elif median_gap_days <= 45:
+        return "monthly"
+    elif median_gap_days <= 100:
+        return "quarterly"
+    else:
+        return "annual"
+
+
+def infer_rolling_window_periods(series: pd.Series) -> int | None:
+    """
+    Returns the rolling window (in number of observations) that
+    represents ~2 calendar years for this series' frequency, or None
+    if the frequency is annual/unknown — annual series (e.g. public
+    debt) don't have enough resolution for this technique; critical
+    slowing down needs many overlapping windows to detect a TREND in
+    autocorrelation/variance, which a handful of annual points cannot
+    support.
+    """
+    freq = infer_frequency_label(series)
+    return FREQUENCY_ROLLING_WINDOWS.get(freq)  # None for "annual"/"unknown"
+
 def rolling_autocorr_lag1(series: pd.Series, window: int = EWS_ROLLING_WINDOW) -> pd.Series:
     """
     Lag-1 autocorrelation computed on a trailing rolling window.

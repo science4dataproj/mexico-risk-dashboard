@@ -12,6 +12,8 @@ from src.analysis.early_warning import (
     compute_early_warning_stats,
 )
 from src.analysis.windows import get_full_history_window
+#Frequency 
+from src.analysis.early_warning import infer_frequency_label, infer_rolling_window_periods
 
 
 def test_rolling_autocorr_detects_known_ar1_process():
@@ -83,3 +85,38 @@ def test_critical_slowing_down_flag_does_not_fire_on_stable_noise():
 
     flag_row = df[df["stat_name"] == "critical_slowing_down_flag"].iloc[0]
     assert flag_row["value"] == 0.0
+
+#frequency fix
+
+def test_infer_frequency_label_monthly():
+    dates = pd.date_range("2015-01-01", periods=50, freq="MS")
+    series = pd.Series(np.zeros(50), index=dates)
+    assert infer_frequency_label(series) == "monthly"
+
+
+def test_infer_frequency_label_daily():
+    dates = pd.date_range("2015-01-01", periods=200, freq="D")
+    series = pd.Series(np.zeros(200), index=dates)
+    assert infer_frequency_label(series) == "daily"
+
+
+def test_infer_frequency_label_annual():
+    dates = pd.date_range("2000-01-01", periods=20, freq="YS")
+    series = pd.Series(np.zeros(20), index=dates)
+    assert infer_frequency_label(series) == "annual"
+
+
+def test_infer_rolling_window_periods_scales_by_frequency():
+    monthly_dates = pd.date_range("2015-01-01", periods=50, freq="MS")
+    monthly_series = pd.Series(np.zeros(50), index=monthly_dates)
+    assert infer_rolling_window_periods(monthly_series) == 24
+
+    daily_dates = pd.date_range("2015-01-01", periods=200, freq="D")
+    daily_series = pd.Series(np.zeros(200), index=daily_dates)
+    assert infer_rolling_window_periods(daily_series) == 504
+
+
+def test_infer_rolling_window_periods_none_for_annual():
+    annual_dates = pd.date_range("2000-01-01", periods=20, freq="YS")
+    annual_series = pd.Series(np.zeros(20), index=annual_dates)
+    assert infer_rolling_window_periods(annual_series) is None
