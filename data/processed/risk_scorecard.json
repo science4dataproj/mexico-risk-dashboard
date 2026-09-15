@@ -1,52 +1,100 @@
 {
-  "generated_at": "2026-09-15T16:41:31.694236+00:00",
+  "generated_at": "2026-09-15T21:25:07.689364+00:00",
   "composite_score": 62.9,
-  "composite_label": "Tendencia a monitorear",
+  "composite_label": {
+    "es": "Tendencia a monitorear",
+    "en": "Trend to monitor"
+  },
   "domains": [
     {
       "domain_key": "external_stability",
-      "display_name": "Estabilidad externa",
+      "display_name": {
+        "es": "Estabilidad externa",
+        "en": "External stability"
+      },
       "score": 62.5,
-      "label": "Tendencia a monitorear",
+      "label": {
+        "es": "Tendencia a monitorear",
+        "en": "Trend to monitor"
+      },
       "n_signals_active": 8,
       "n_signals_possible": 12,
-      "narrative": "El tipo de cambio está en un nivel históricamente bajo (percentil 4), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente. Las reservas internacionales están en un nivel históricamente alto (percentil 100), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad."
+      "narrative": {
+        "es": "El tipo de cambio está en un nivel históricamente bajo (percentil 4), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente. Las reservas internacionales están en un nivel históricamente alto (percentil 100), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad.",
+        "en": "The exchange rate is at a historically low level (4th percentile), showing a significant trend in only one of the two stability indicators, with no consistent pattern. International reserves are at a historically high level (100th percentile), showing a statistically significant, consistent trend toward greater instability."
+      }
     },
     {
       "domain_key": "liquidity",
-      "display_name": "Liquidez",
+      "display_name": {
+        "es": "Liquidez",
+        "en": "Liquidity"
+      },
       "score": 81.2,
-      "label": "Señal fuerte de fragilidad",
+      "label": {
+        "es": "Señal fuerte de fragilidad",
+        "en": "Strong fragility signal"
+      },
       "n_signals_active": 10,
       "n_signals_possible": 12,
-      "narrative": "M1 está en un nivel históricamente alto (percentil 98), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente. M2 está en un nivel históricamente alto (percentil 100), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad."
+      "narrative": {
+        "es": "M1 está en un nivel históricamente alto (percentil 98), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente. M2 está en un nivel históricamente alto (percentil 100), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad.",
+        "en": "M1 is at a historically high level (98th percentile), showing a significant trend in only one of the two stability indicators, with no consistent pattern. M2 is at a historically high level (100th percentile), showing a statistically significant, consistent trend toward greater instability."
+      }
     },
     {
       "domain_key": "rates",
-      "display_name": "Tasas y política monetaria",
+      "display_name": {
+        "es": "Tasas y política monetaria",
+        "en": "Rates & monetary policy"
+      },
       "score": 100.0,
-      "label": "Señal fuerte de fragilidad",
+      "label": {
+        "es": "Señal fuerte de fragilidad",
+        "en": "Strong fragility signal"
+      },
       "n_signals_active": 12,
       "n_signals_possible": 12,
-      "narrative": "Los CETES a 28 días están en un nivel históricamente bajo (percentil 25), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad. La tasa objetivo de Banxico está en un nivel históricamente bajo (percentil 28), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad."
+      "narrative": {
+        "es": "Los CETES a 28 días están en un nivel históricamente bajo (percentil 25), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad. La tasa objetivo de Banxico está en un nivel históricamente bajo (percentil 28), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad.",
+        "en": "The 28-day CETES rate is at a historically low level (25th percentile), showing a statistically significant, consistent trend toward greater instability. Banxico's target rate is at a historically low level (28th percentile), showing a statistically significant, consistent trend toward greater instability."
+      }
     },
     {
       "domain_key": "real_economy",
-      "display_name": "Economía real",
+      "display_name": {
+        "es": "Economía real",
+        "en": "Real economy"
+      },
       "score": 8.3,
-      "label": "Sin cambios relevantes",
+      "label": {
+        "es": "Sin cambios relevantes",
+        "en": "No notable change"
+      },
       "n_signals_active": 1,
       "n_signals_possible": 9,
-      "narrative": "El PIB trimestral está en un nivel históricamente alto (percentil 99), sin suficiente información de tendencia. La tasa de desocupación está en un nivel históricamente bajo (percentil 29), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente."
+      "narrative": {
+        "es": "El PIB trimestral está en un nivel históricamente alto (percentil 99), sin suficiente información de tendencia. La tasa de desocupación está en un nivel históricamente bajo (percentil 29), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente.",
+        "en": "Quarterly GDP is at a historically high level (99th percentile), with insufficient trend data available. The unemployment rate is at a historically low level (29th percentile), showing a significant trend in only one of the two stability indicators, with no consistent pattern."
+      }
     },
     {
       "domain_key": "prices",
-      "display_name": "Precios",
+      "display_name": {
+        "es": "Precios",
+        "en": "Prices"
+      },
       "score": 62.5,
-      "label": "Tendencia a monitorear",
+      "label": {
+        "es": "Tendencia a monitorear",
+        "en": "Trend to monitor"
+      },
       "n_signals_active": 4,
       "n_signals_possible": 6,
-      "narrative": "El INPC está en un nivel históricamente alto (percentil 97), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad."
+      "narrative": {
+        "es": "El INPC está en un nivel históricamente alto (percentil 97), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad.",
+        "en": "The CPI is at a historically high level (97th percentile), showing a statistically significant, consistent trend toward greater instability."
+      }
     }
   ]
 }

@@ -54,6 +54,31 @@
     border-bottom: 1px solid var(--line);
   }
 
+  .lang-toggle {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+  }
+  .lang-toggle button {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-weight: 600;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-faint);
+    padding: 5px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .lang-toggle button.active {
+    border-color: var(--ink);
+    color: var(--ink);
+  }
+  .lang-toggle button:hover:not(.active) {
+    border-color: var(--ink-soft);
+    color: var(--ink-soft);
+  }
+
   .kicker {
     font-family: var(--sans);
     font-size: 13px;
@@ -289,9 +314,13 @@
 
 <div class="wrap">
   <header class="top">
-    <p class="kicker">Monitoreo estadístico de la economía mexicana, con actualización automática mensual.</p>
-    <h1>Panel de riesgo económico de México</h1>
-    <p class="lede">Un índice de fragilidad económica construido con series oficiales de Banxico, INEGI y SHCP. No evalúa si la economía va bien o mal — mide si su comportamiento se está volviendo más inestable con el tiempo.</p>
+    <div class="lang-toggle" id="lang-toggle">
+      <button type="button" data-lang="es" class="active">ES</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+    <p class="kicker" id="kicker-text"></p>
+    <h1 id="h1-text"></h1>
+    <p class="lede" id="lede-text"></p>
   </header>
 
   <main>
@@ -300,27 +329,69 @@
     </section>
 
     <section class="domains" id="domains-section" style="display:none">
-      <h2>Desglose por dominio</h2>
+      <h2 id="domains-heading"></h2>
       <div class="domain-grid" id="domain-grid"></div>
-      <div class="fiscal-note">
-        <strong>Solvencia fiscal (deuda pública, % del PIB)</strong> no forma parte de este índice. La serie se actualiza solo una vez al año, así que no hay suficientes observaciones para calcular una tendencia rodante de estabilidad — el mismo criterio de rigor estadístico que se aplica al resto del panel. Se está evaluando cómo incorporarla de otra forma en una futura versión.
-      </div>
+      <div class="fiscal-note" id="fiscal-note"></div>
     </section>
   </main>
 
   <footer>
-    <p>Este panel mide fragilidad estadística —qué tan inestable se comporta cada serie respecto a su propia historia—, no desempeño económico ni una predicción de crisis. Los niveles actuales (percentiles) y las tendencias de estabilidad se calculan de forma independiente, de manera intencional. La metodología completa está disponible en el repositorio.</p>
+    <p id="footer-text"></p>
     <p id="updated-line"></p>
     <nav>
-      <a href="https://github.com/science4dataproj/mexico-risk-dashboard" target="_blank" rel="noopener">Repositorio y metodología</a>
-      <a href="https://github.com/science4dataproj/mexico-risk-dashboard/blob/main/data/series_Medatada.md" target="_blank" rel="noopener">Fuentes y decisiones de diseño</a>
+      <a href="https://github.com/science4dataproj/mexico-risk-dashboard" target="_blank" rel="noopener" id="nav-repo">Repositorio y metodología</a>
+      <a href="https://github.com/science4dataproj/mexico-risk-dashboard/blob/main/data/series_Medatada.md" target="_blank" rel="noopener" id="nav-sources">Fuentes y decisiones de diseño</a>
       <a href="mailto:science4data.proj@gmail.com">science4data.proj@gmail.com</a>
     </nav>
   </footer>
 </div>
 
 <script>
-(async function () {
+(function () {
+  const STRINGS = {
+    es: {
+      title: "Panel de Riesgo Económico — México",
+      kicker: "Monitoreo estadístico de la economía mexicana, con actualización automática mensual.",
+      h1: "Panel de riesgo económico de México",
+      lede: "Un índice de fragilidad económica construido con series oficiales de Banxico, INEGI y SHCP. No evalúa si la economía va bien o mal — mide si su comportamiento se está volviendo más inestable con el tiempo.",
+      loading: "Cargando el panel más reciente…",
+      scaleLegend: ["Sin cambios relevantes", "Tendencia a monitorear", "Señal fuerte de fragilidad"],
+      gaugeMeta: "Promedio simple, sin ponderar, de 5 dominios evaluables (estabilidad externa, liquidez, tasas, economía real, precios). Construido solo con tendencias de autocorrelación y varianza estadísticamente significativas — nunca con el nivel actual de cada serie.",
+      domainsHeading: "Desglose por dominio",
+      fiscalNoteStrong: "Solvencia fiscal (deuda pública, % del PIB)",
+      fiscalNote: " no forma parte de este índice. La serie se actualiza solo una vez al año, así que no hay suficientes observaciones para calcular una tendencia rodante de estabilidad — el mismo criterio de rigor estadístico que se aplica al resto del panel. Se está evaluando cómo incorporarla de otra forma en una futura versión.",
+      footerText: "Este panel mide fragilidad estadística —qué tan inestable se comporta cada serie respecto a su propia historia—, no desempeño económico ni una predicción de crisis. Los niveles actuales (percentiles) y las tendencias de estabilidad se calculan de forma independiente, de manera intencional. La metodología completa está disponible en el repositorio.",
+      updatedPrefix: "Última actualización: ",
+      navRepo: "Repositorio y metodología",
+      navSources: "Fuentes y decisiones de diseño",
+      locale: "es-MX",
+      ariaGaugeLabel: (score, label) => `Índice compuesto: ${score} de 100, ${label}`,
+      errorMsg: 'No se pudo cargar el panel de riesgo en este momento. Los datos viven en <code>data/processed/risk_scorecard.json</code> dentro del repositorio — si el archivo se movió o renombró, este mensaje es la señal de que hay que actualizar la ruta aquí.',
+    },
+    en: {
+      title: "Mexico Economic Risk Dashboard",
+      kicker: "Statistical monitoring of the Mexican economy, with automatic monthly updates.",
+      h1: "Mexico Economic Risk Dashboard",
+      lede: "An economic fragility index built from official Banxico, INEGI, and SHCP series. It doesn't assess whether the economy is doing well or poorly — it measures whether its behavior is becoming more unstable over time.",
+      loading: "Loading the latest panel…",
+      scaleLegend: ["No notable change", "Trend to monitor", "Strong fragility signal"],
+      gaugeMeta: "Simple, unweighted average across 5 eligible domains (external stability, liquidity, rates, real economy, prices). Built only from statistically significant autocorrelation and variance trends — never from a series' current level.",
+      domainsHeading: "Breakdown by domain",
+      fiscalNoteStrong: "Fiscal solvency (public debt, % of GDP)",
+      fiscalNote: " is not part of this index. The series is updated only once a year, so there isn't enough data to calculate a rolling stability trend — the same statistical rigor applied to the rest of the panel. How to incorporate it differently is under evaluation for a future version.",
+      footerText: "This panel measures statistical fragility — how unstable each series is behaving relative to its own history — not economic performance or a crisis prediction. Current levels (percentiles) and stability trends are calculated independently, by design. Full methodology is available in the repository.",
+      updatedPrefix: "Last updated: ",
+      navRepo: "Repository & methodology",
+      navSources: "Sources & design decisions",
+      locale: "en-US",
+      ariaGaugeLabel: (score, label) => `Composite index: ${score} out of 100, ${label}`,
+      errorMsg: 'Could not load the risk panel right now. The data lives at <code>data/processed/risk_scorecard.json</code> in the repository — if the file was moved or renamed, this message is the signal to update the path here.',
+    },
+  };
+
+  let currentLang = 'es';
+  let scorecardData = null;
+
   const gaugeSection = document.getElementById('gauge-section');
   const domainsSection = document.getElementById('domains-section');
   const domainGrid = document.getElementById('domain-grid');
@@ -333,73 +404,117 @@
   }
 
   function isStableLabel(label) {
-    return label === 'Sin cambios relevantes';
+    return label === 'Sin cambios relevantes' || label === 'No notable change';
   }
 
-  function renderGauge(data) {
+  function applyStaticStrings(lang) {
+    const s = STRINGS[lang];
+    document.documentElement.lang = lang;
+    document.title = s.title;
+    document.getElementById('kicker-text').textContent = s.kicker;
+    document.getElementById('h1-text').textContent = s.h1;
+    document.getElementById('lede-text').textContent = s.lede;
+    document.getElementById('domains-heading').textContent = s.domainsHeading;
+    document.getElementById('footer-text').textContent = s.footerText;
+    document.getElementById('nav-repo').textContent = s.navRepo;
+    document.getElementById('nav-sources').textContent = s.navSources;
+
+    const fiscalNote = document.getElementById('fiscal-note');
+    fiscalNote.innerHTML = `<strong>${escapeHtml(s.fiscalNoteStrong)}</strong>${escapeHtml(s.fiscalNote)}`;
+
+    const loadingMsg = document.getElementById('loading-msg');
+    if (loadingMsg) loadingMsg.textContent = s.loading;
+  }
+
+  function renderGauge(data, lang) {
+    const s = STRINGS[lang];
     const pct = Math.max(0, Math.min(100, data.composite_score));
-    const stable = isStableLabel(data.composite_label);
+    const label = data.composite_label[lang];
+    const stable = isStableLabel(label);
 
     gaugeSection.innerHTML = `
       <div class="gauge-top">
         <span class="gauge-number">${data.composite_score.toFixed(1)}</span>
-        <span class="gauge-label ${stable ? 'stable' : ''}">${escapeHtml(data.composite_label)}</span>
+        <span class="gauge-label ${stable ? 'stable' : ''}">${escapeHtml(label)}</span>
       </div>
-      <div class="scale-track" role="img" aria-label="Índice compuesto: ${data.composite_score.toFixed(1)} de 100, ${escapeHtml(data.composite_label)}">
+      <div class="scale-track" role="img" aria-label="${escapeHtml(s.ariaGaugeLabel(data.composite_score.toFixed(1), label))}">
         <div class="scale-marker" style="left:${pct}%"></div>
       </div>
       <div class="scale-legend">
-        <span>Sin cambios relevantes</span>
-        <span>Tendencia a monitorear</span>
-        <span>Señal fuerte de fragilidad</span>
+        <span>${escapeHtml(s.scaleLegend[0])}</span>
+        <span>${escapeHtml(s.scaleLegend[1])}</span>
+        <span>${escapeHtml(s.scaleLegend[2])}</span>
       </div>
-      <p class="gauge-meta">Promedio simple, sin ponderar, de 5 dominios evaluables (estabilidad externa, liquidez, tasas, economía real, precios). Construido solo con tendencias de autocorrelación y varianza estadísticamente significativas — nunca con el nivel actual de cada serie.</p>
+      <p class="gauge-meta">${escapeHtml(s.gaugeMeta)}</p>
     `;
   }
 
-  function renderDomains(domains) {
+  function renderDomains(domains, lang) {
     const isOdd = domains.length % 2 !== 0;
     domainGrid.innerHTML = domains.map((d, i) => {
-      const stable = isStableLabel(d.label);
+      const label = d.label[lang];
+      const stable = isStableLabel(label);
       const isLast = i === domains.length - 1;
       const wideClass = (isOdd && isLast) ? ' domain-card--wide' : '';
       return `
         <article class="domain-card${wideClass}">
           <div class="domain-head">
-            <span class="domain-name">${escapeHtml(d.display_name)}</span>
+            <span class="domain-name">${escapeHtml(d.display_name[lang])}</span>
             <span class="domain-score">${d.score.toFixed(1)}</span>
           </div>
           <div class="domain-bar-track">
             <div class="domain-bar-fill ${stable ? 'stable' : ''}" style="width:${Math.max(0, Math.min(100, d.score))}%"></div>
           </div>
-          <p class="domain-status ${stable ? 'stable' : ''}">${escapeHtml(d.label)}</p>
-          <p class="domain-narrative">${escapeHtml(d.narrative)}</p>
+          <p class="domain-status ${stable ? 'stable' : ''}">${escapeHtml(label)}</p>
+          <p class="domain-narrative">${escapeHtml(d.narrative[lang])}</p>
         </article>
       `;
     }).join('');
     domainsSection.style.display = '';
   }
 
-  function renderError() {
-    gaugeSection.innerHTML = `<div class="state-msg">No se pudo cargar el panel de riesgo en este momento. Los datos viven en <code>data/processed/risk_scorecard.json</code> dentro del repositorio — si el archivo se movió o renombró, este mensaje es la señal de que hay que actualizar la ruta aquí.</div>`;
-  }
-
-  try {
-    const res = await fetch('data/processed/risk_scorecard.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error('fetch failed: ' + res.status);
-    const data = await res.json();
-
-    renderGauge(data);
-    renderDomains(data.domains);
-
+  function renderUpdatedLine(data, lang) {
+    const s = STRINGS[lang];
     const updated = new Date(data.generated_at);
-    updatedLine.textContent = 'Última actualización: ' + updated.toLocaleDateString('es-MX', {
+    updatedLine.textContent = s.updatedPrefix + updated.toLocaleDateString(s.locale, {
       year: 'numeric', month: 'long', day: 'numeric'
     });
-  } catch (err) {
-    renderError();
-    console.error(err);
   }
+
+  function renderAll(lang) {
+    applyStaticStrings(lang);
+    if (scorecardData) {
+      renderGauge(scorecardData, lang);
+      renderDomains(scorecardData.domains, lang);
+      renderUpdatedLine(scorecardData, lang);
+    }
+  }
+
+  function renderError(lang) {
+    gaugeSection.innerHTML = `<div class="state-msg">${STRINGS[lang].errorMsg}</div>`;
+  }
+
+  document.getElementById('lang-toggle').addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-lang]');
+    if (!btn || btn.classList.contains('active')) return;
+    currentLang = btn.dataset.lang;
+    this.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
+    renderAll(currentLang);
+  });
+
+  applyStaticStrings(currentLang);
+
+  (async function load() {
+    try {
+      const res = await fetch('data/processed/risk_scorecard.json', { cache: 'no-store' });
+      if (!res.ok) throw new Error('fetch failed: ' + res.status);
+      scorecardData = await res.json();
+      renderAll(currentLang);
+    } catch (err) {
+      renderError(currentLang);
+      console.error(err);
+    }
+  })();
 })();
 </script>
 

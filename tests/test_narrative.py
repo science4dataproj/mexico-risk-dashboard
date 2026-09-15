@@ -149,3 +149,80 @@ def test_trend_phrase_confirms_consistent_when_both_significant():
     text = _trend_phrase(ac1_tau=0.562, ac1_sig=True, var_tau=0.686, var_sig=True)
     assert "consistente" in text
     assert "inestabilidad" in text
+
+from src.reporting.narrative import generate_domain_narrative_bilingual, _ordinal_en
+
+
+def test_ordinal_en_handles_teens_correctly():
+    """11, 12, 13 are the classic edge case that breaks naive ordinal logic."""
+    assert _ordinal_en(11) == "11th"
+    assert _ordinal_en(12) == "12th"
+    assert _ordinal_en(13) == "13th"
+    assert _ordinal_en(21) == "21st"
+    assert _ordinal_en(22) == "22nd"
+    assert _ordinal_en(23) == "23rd"
+    assert _ordinal_en(4) == "4th"
+
+
+def test_english_narrative_matches_real_m2_pattern():
+    rows = [
+        _row("m2", "rolling_10y", "percentile_rank", 99.6),
+        _row("m2", "rolling_10y", "ac1_trend_tau", 0.56),
+        _row("m2", "rolling_10y", "variance_trend_tau", 0.69),
+    ]
+    df = pd.DataFrame(rows)
+    text = generate_series_narrative(df, "m2", lang="en")
+    assert "historically high" in text
+    assert "instability" in text
+    assert "100th percentile" in text
+
+def test_english_narrative_matches_real_significance_mismatch_pattern():
+    rows = [
+        _row("fx_rate_fix", "rolling_10y", "percentile_rank", 3.6),
+        _row("fx_rate_fix", "rolling_10y", "ac1_trend_tau", 0.353, flag_significant=True),
+        _row("fx_rate_fix", "rolling_10y", "variance_trend_tau", 0.017, flag_significant=False),
+    ]
+    df = pd.DataFrame(rows)
+    text = generate_series_narrative(df, "fx_rate_fix", lang="en")
+    assert "consistent trend" not in text
+    assert "only one of the two" in text
+
+
+def test_default_language_is_spanish_for_backward_compatibility():
+    rows = [
+        _row("m2", "rolling_10y", "percentile_rank", 99.6),
+        _row("m2", "rolling_10y", "ac1_trend_tau", 0.56),
+        _row("m2", "rolling_10y", "variance_trend_tau", 0.69),
+    ]
+    df = pd.DataFrame(rows)
+    text_no_lang_arg = generate_series_narrative(df, "m2")
+    text_explicit_es = generate_series_narrative(df, "m2", lang="es")
+    assert text_no_lang_arg == text_explicit_es
+
+
+def test_domain_narrative_bilingual_returns_both_languages():
+    rows = [
+        _row("cpi", "rolling_10y", "percentile_rank", 97.1),
+        _row("cpi", "rolling_10y", "ac1_trend_tau", 0.237, flag_significant=True),
+        _row("cpi", "rolling_10y", "variance_trend_tau", 0.241, flag_significant=True),
+    ]
+    df = pd.DataFrame(rows)
+    result = generate_domain_narrative_bilingual(df, "prices")
+    assert "es" in result and "en" in result
+    assert "INPC" in result["es"]
+    assert "CPI" in result["en"]
+
+def test_english_missing_trend_data_reads_as_complete_sentence():
+    """
+    Regression test: the English 'no trend data' phrase must connect
+    grammatically to the rest of the sentence via 'with', not read as
+    a bare, disconnected noun phrase after the comma.
+    """
+    rows = [
+        _row("quarterly_gdp", "rolling_10y", "percentile_rank", 98.8),
+        # no ac1_trend_tau / variance_trend_tau rows -> triggers the missing-data branch
+    ]
+    df = pd.DataFrame(rows)
+    text = generate_series_narrative(df, "quarterly_gdp", lang="en")
+    assert "with insufficient trend data available" in text
+    assert ", insufficient trend data" not in text  # the old, broken phrasing
