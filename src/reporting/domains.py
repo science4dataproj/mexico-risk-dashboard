@@ -10,69 +10,99 @@ Design note: domains group indicators by economic function (external
 stability, liquidity, etc.), NOT by data source or frequency — this is
 a reporting taxonomy for stakeholders, independent of the pipeline
 architecture used in src/analysis/.
+
+Bilingual design (2026-09): every user-facing string is stored as a
+dict keyed by language code ({"es": ..., "en": ...}), computed once at
+the source, never translated downstream. This is deliberate: a single
+source of truth per string, rather than two parallel files that could
+drift out of sync as the project grows (see SERIES_METADATA.md,
+Decisions Log #15).
 """
 
 from dataclasses import dataclass
+
+SUPPORTED_LANGUAGES = ("es", "en")
 
 
 @dataclass(frozen=True)
 class DomainInfo:
     key: str
-    display_name: str
-    description: str
+    display_name: dict[str, str]
+    description: dict[str, str]
     included_in_composite: bool
-    exclusion_reason: str | None = None
+    exclusion_reason: dict[str, str] | None = None
 
 
 DOMAIN_METADATA: dict[str, DomainInfo] = {
     "external_stability": DomainInfo(
         key="external_stability",
-        display_name="Estabilidad externa",
-        description="Exposición de México a choques externos: tipo de cambio y colchón de reservas.",
+        display_name={"es": "Estabilidad externa", "en": "External stability"},
+        description={
+            "es": "Exposición de México a choques externos: tipo de cambio y colchón de reservas.",
+            "en": "Mexico's exposure to external shocks: exchange rate and reserve buffer.",
+        },
         included_in_composite=True,
     ),
     "liquidity": DomainInfo(
         key="liquidity",
-        display_name="Liquidez",
-        description="Comportamiento de los agregados monetarios (oferta de dinero).",
+        display_name={"es": "Liquidez", "en": "Liquidity"},
+        description={
+            "es": "Comportamiento de los agregados monetarios (oferta de dinero).",
+            "en": "Behavior of monetary aggregates (money supply).",
+        },
         included_in_composite=True,
     ),
     "rates": DomainInfo(
         key="rates",
-        display_name="Tasas y política monetaria",
-        description="Estabilidad del costo del dinero: CETES y tasa objetivo de Banxico.",
+        display_name={"es": "Tasas y política monetaria", "en": "Rates & monetary policy"},
+        description={
+            "es": "Estabilidad del costo del dinero: CETES y tasa objetivo de Banxico.",
+            "en": "Stability of the cost of money: CETES and Banxico's target rate.",
+        },
         included_in_composite=True,
     ),
     "real_economy": DomainInfo(
         key="real_economy",
-        display_name="Economía real",
-        description="Actividad económica y mercado laboral: PIB y desempleo.",
+        display_name={"es": "Economía real", "en": "Real economy"},
+        description={
+            "es": "Actividad económica y mercado laboral: PIB y desempleo.",
+            "en": "Economic activity and labor market: GDP and unemployment.",
+        },
         included_in_composite=True,
     ),
     "prices": DomainInfo(
         key="prices",
-        display_name="Precios",
-        description="Estabilidad del nivel general de precios (INPC).",
+        display_name={"es": "Precios", "en": "Prices"},
+        description={
+            "es": "Estabilidad del nivel general de precios (INPC).",
+            "en": "Stability of the general price level (CPI).",
+        },
         included_in_composite=True,
     ),
     "fiscal_solvency": DomainInfo(
         key="fiscal_solvency",
-        display_name="Solvencia fiscal",
-        description="Deuda pública como porcentaje del PIB.",
+        display_name={"es": "Solvencia fiscal", "en": "Fiscal solvency"},
+        description={
+            "es": "Deuda pública como porcentaje del PIB.",
+            "en": "Public debt as a percentage of GDP.",
+        },
         included_in_composite=False,
-        exclusion_reason=(
-            "Annual frequency (SHCP, manual update) provides no rolling-window "
-            "trend statistics (ac1_trend_tau, variance_trend_tau) — the fragility "
-            "index is built exclusively from trend signals, so a domain with no "
-            "trend data cannot contribute a comparable sub-score. Debt level "
-            "context is still shown in the scorecard narrative, just not folded "
-            "into the composite number."
-        ),
+        exclusion_reason={
+            "es": (
+                "Frecuencia anual (SHCP, actualización manual) no genera estadísticas "
+                "de tendencia rodante — el índice de fragilidad se construye "
+                "exclusivamente con señales de tendencia."
+            ),
+            "en": (
+                "Annual frequency (SHCP, manual update) provides no rolling-window "
+                "trend statistics — the fragility index is built exclusively from "
+                "trend signals."
+            ),
+        },
     ),
 }
 
 
-# series_key (from config.py) -> domain key
 DOMAIN_MAP: dict[str, str] = {
     "fx_rate_fix": "external_stability",
     "international_reserves": "external_stability",
@@ -88,11 +118,6 @@ DOMAIN_MAP: dict[str, str] = {
 
 
 def get_domain_for_series(series_key: str) -> str:
-    """
-    Returns the domain key for a given series. Raises explicitly rather
-    than returning None, so a newly-added series without a domain
-    mapping fails loudly instead of silently disappearing from reports.
-    """
     if series_key not in DOMAIN_MAP:
         raise KeyError(
             f"Series '{series_key}' has no domain mapping in DOMAIN_MAP. "
@@ -103,5 +128,16 @@ def get_domain_for_series(series_key: str) -> str:
 
 
 def get_composite_domains() -> list[str]:
-    """Domain keys that participate in the composite index (excludes fiscal_solvency)."""
     return [d.key for d in DOMAIN_METADATA.values() if d.included_in_composite]
+
+
+def get_display_name(domain_key: str, lang: str = "es") -> str:
+    """
+    Returns the domain's display name in the requested language.
+    Raises explicitly on an unsupported language code, rather than
+    silently falling back to Spanish — a missing translation should be
+    caught immediately, not discovered later on the live page.
+    """
+    if lang not in SUPPORTED_LANGUAGES:
+        raise ValueError(f"Unsupported language '{lang}'. Supported: {SUPPORTED_LANGUAGES}")
+    return DOMAIN_METADATA[domain_key].display_name[lang]

@@ -50,3 +50,31 @@ def test_every_domain_metadata_key_matches_its_dict_key():
     doesn't match the dictionary key it's stored under."""
     for dict_key, info in DOMAIN_METADATA.items():
         assert dict_key == info.key
+
+
+from src.reporting.domains import get_display_name, SUPPORTED_LANGUAGES
+
+
+def test_every_domain_has_both_languages():
+    """
+    Guards against adding a new domain with only one language filled
+    in — every display_name, description, and (if present)
+    exclusion_reason dict must have both 'es' and 'en' keys.
+    """
+    for domain_key, info in DOMAIN_METADATA.items():
+        for lang in SUPPORTED_LANGUAGES:
+            assert lang in info.display_name, f"{domain_key} missing '{lang}' display_name"
+            assert lang in info.description, f"{domain_key} missing '{lang}' description"
+            if info.exclusion_reason is not None:
+                assert lang in info.exclusion_reason, f"{domain_key} missing '{lang}' exclusion_reason"
+
+
+def test_get_display_name_returns_correct_language():
+    assert get_display_name("liquidity", "es") == "Liquidez"
+    assert get_display_name("liquidity", "en") == "Liquidity"
+
+
+def test_get_display_name_rejects_unsupported_language():
+    import pytest
+    with pytest.raises(ValueError):
+        get_display_name("liquidity", "fr")
