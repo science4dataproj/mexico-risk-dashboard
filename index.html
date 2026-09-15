@@ -106,8 +106,34 @@
 
   /* ---- Gauge ---- */
 
+  main { padding-top: 48px; }
+
+  .section-heading {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: none;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+  }
+
+  .section-sub {
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 10px;
+    line-height: 1.55;
+  }
+
+  .methodology-inline {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    margin: 0 0 26px;
+  }
+
   section.gauge {
-    padding: 48px 0 40px;
+    padding: 0 0 40px;
     border-bottom: 1px solid var(--line);
   }
 
@@ -190,15 +216,6 @@
   /* ---- Domains ---- */
 
   section.domains { padding: 44px 0 8px; }
-
-  section.domains > h2 {
-    font-family: var(--sans);
-    font-weight: 600;
-    font-size: 13px;
-    text-transform: none;
-    color: var(--ink-faint);
-    margin: 0 0 22px;
-  }
 
   .domain-grid {
     display: grid;
@@ -348,12 +365,16 @@
   </header>
 
   <main>
+    <h2 class="section-heading" id="gauge-heading"></h2>
+    <p class="section-sub" id="gauge-heading-sub"></p>
+    <p class="methodology-inline"><a href="https://github.com/science4dataproj/mexico-risk-dashboard/blob/main/data/METHODOLOGY.md" target="_blank" rel="noopener" id="gauge-methodology-link"></a></p>
+
     <section class="gauge" id="gauge-section" aria-live="polite">
       <div class="state-msg" id="loading-msg">Cargando el panel más reciente…</div>
     </section>
 
     <section class="domains" id="domains-section" style="display:none">
-      <h2 id="domains-heading"></h2>
+      <h2 class="section-heading" id="domains-heading"></h2>
       <div class="domain-grid" id="domain-grid"></div>
       <div class="fiscal-note" id="fiscal-note"></div>
     </section>
@@ -380,6 +401,9 @@
       h1: "Panel de riesgo económico de México",
       lede: "Un índice de fragilidad económica construido con series oficiales de Banxico, INEGI y SHCP. No evalúa si la economía va bien o mal — mide si su comportamiento se está volviendo más inestable con el tiempo.",
       loading: "Cargando el panel más reciente…",
+      gaugeHeading: "Índice compuesto de fragilidad",
+      gaugeHeadingSub: "Resume, en un solo número de 0 a 100, qué tan inestables se están comportando en conjunto los cinco dominios que monitorea este panel — entre más alto, más señales de fragilidad creciente hay actualmente.",
+      methodologyLinkText: "Ver metodología completa: cómo se calcula este número",
       scaleLegend: ["Sin cambios relevantes", "Tendencia a monitorear", "Señal fuerte de fragilidad"],
       gaugeMeta: "Promedio simple, sin ponderar, de 5 dominios evaluables (estabilidad externa, liquidez, tasas, economía real, precios). Construido solo con tendencias de autocorrelación y varianza estadísticamente significativas — nunca con el nivel actual de cada serie.",
       domainsHeading: "Desglose por dominio",
@@ -402,6 +426,9 @@
       h1: "Mexico Economic Risk Dashboard",
       lede: "An economic fragility index built from official Banxico, INEGI, and SHCP series. It doesn't assess whether the economy is doing well or poorly — it measures whether its behavior is becoming more unstable over time.",
       loading: "Loading the latest panel…",
+      gaugeHeading: "Composite fragility index",
+      gaugeHeadingSub: "Summarizes, in a single number from 0 to 100, how unstable the five domains this panel tracks are behaving as a whole — the higher the number, the more signs of growing fragility right now.",
+      methodologyLinkText: "See full methodology: how this number is calculated",
       scaleLegend: ["No notable change", "Trend to monitor", "Strong fragility signal"],
       gaugeMeta: "Simple, unweighted average across 5 eligible domains (external stability, liquidity, rates, real economy, prices). Built only from statistically significant autocorrelation and variance trends — never from a series' current level.",
       domainsHeading: "Breakdown by domain",
@@ -447,6 +474,9 @@
     document.getElementById('h1-text').textContent = s.h1;
     document.getElementById('lede-text').textContent = s.lede;
     document.getElementById('domains-heading').textContent = s.domainsHeading;
+    document.getElementById('gauge-heading').textContent = s.gaugeHeading;
+    document.getElementById('gauge-heading-sub').textContent = s.gaugeHeadingSub;
+    document.getElementById('gauge-methodology-link').textContent = s.methodologyLinkText;
     document.getElementById('footer-text').textContent = s.footerText;
     document.getElementById('nav-repo').textContent = s.navRepo;
     document.getElementById('nav-methodology').textContent = s.navMethodology;
