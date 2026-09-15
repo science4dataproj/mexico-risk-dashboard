@@ -339,7 +339,8 @@
     <p id="footer-text"></p>
     <p id="updated-line"></p>
     <nav>
-      <a href="https://github.com/science4dataproj/mexico-risk-dashboard" target="_blank" rel="noopener" id="nav-repo">Repositorio y metodología</a>
+      <a href="https://github.com/science4dataproj/mexico-risk-dashboard" target="_blank" rel="noopener" id="nav-repo">Repositorio</a>
+      <a href="https://github.com/science4dataproj/mexico-risk-dashboard/blob/main/data/METHODOLOGY.md" target="_blank" rel="noopener" id="nav-methodology">Metodología del índice</a>
       <a href="https://github.com/science4dataproj/mexico-risk-dashboard/blob/main/data/series_Medatada.md" target="_blank" rel="noopener" id="nav-sources">Fuentes y decisiones de diseño</a>
       <a href="mailto:science4data.proj@gmail.com">science4data.proj@gmail.com</a>
     </nav>
@@ -362,7 +363,8 @@
       fiscalNote: " no forma parte de este índice. La serie se actualiza solo una vez al año, así que no hay suficientes observaciones para calcular una tendencia rodante de estabilidad — el mismo criterio de rigor estadístico que se aplica al resto del panel. Se está evaluando cómo incorporarla de otra forma en una futura versión.",
       footerText: "Este panel mide fragilidad estadística —qué tan inestable se comporta cada serie respecto a su propia historia—, no desempeño económico ni una predicción de crisis. Los niveles actuales (percentiles) y las tendencias de estabilidad se calculan de forma independiente, de manera intencional. La metodología completa está disponible en el repositorio.",
       updatedPrefix: "Última actualización: ",
-      navRepo: "Repositorio y metodología",
+      navRepo: "Repositorio",
+      navMethodology: "Metodología del índice",
       navSources: "Fuentes y decisiones de diseño",
       locale: "es-MX",
       ariaGaugeLabel: (score, label) => `Índice compuesto: ${score} de 100, ${label}`,
@@ -381,7 +383,8 @@
       fiscalNote: " is not part of this index. The series is updated only once a year, so there isn't enough data to calculate a rolling stability trend — the same statistical rigor applied to the rest of the panel. How to incorporate it differently is under evaluation for a future version.",
       footerText: "This panel measures statistical fragility — how unstable each series is behaving relative to its own history — not economic performance or a crisis prediction. Current levels (percentiles) and stability trends are calculated independently, by design. Full methodology is available in the repository.",
       updatedPrefix: "Last updated: ",
-      navRepo: "Repository & methodology",
+      navRepo: "Repository",
+      navMethodology: "Index methodology",
       navSources: "Sources & design decisions",
       locale: "en-US",
       ariaGaugeLabel: (score, label) => `Composite index: ${score} out of 100, ${label}`,
@@ -417,6 +420,7 @@
     document.getElementById('domains-heading').textContent = s.domainsHeading;
     document.getElementById('footer-text').textContent = s.footerText;
     document.getElementById('nav-repo').textContent = s.navRepo;
+    document.getElementById('nav-methodology').textContent = s.navMethodology;
     document.getElementById('nav-sources').textContent = s.navSources;
 
     const fiscalNote = document.getElementById('fiscal-note');
