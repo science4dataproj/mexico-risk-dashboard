@@ -205,6 +205,58 @@ independent of any single series.
    backed by test coverage, instead of a human-in-the-loop approval
    that would defeat the point of automating the pipeline at all.
 
+11. **The `since_last_break` reference window and its Chow-test-based
+   structural break detection were retired from the production
+   pipeline (2026-09-14).** Diagnosis: for most series, the "since last
+   break" window anchored to the Sheinbaum administration's start
+   (Oct 2024) or, in one case (quarterly_gdp), to AMLO's start
+   (Dec 2018). Manual investigation of the latter revealed the true
+   driver was the COVID-19 shock (which fell within the post-boundary
+   segment), not the change of administration itself: re-running the
+   Chow test at the actual COVID crash date (Apr 2020) produced a far
+   stronger break (F=22.4, p=2.1e-9) than the Dec-2018 boundary
+   (F=9.0, p=1.9e-4), and excluding COVID-period quarters from the
+   post-boundary segment made the Dec-2018 break disappear entirely
+   (F=0.23, p=0.80).
+
+   Investigating whether the Sheinbaum boundary had the same problem
+   led to a more fundamental finding: a placebo test — comparing the
+   real boundary's F-statistic against F-statistics from 30 arbitrary
+   control dates in the same series — showed the real boundary was
+   NOT distinguishable from noise. For `target_rate`, the real
+   boundary's F-statistic (217.3) ranked in only the 10th percentile
+   of the placebo distribution; for `m2`, the 17th percentile — i.e.,
+   most random dates produced a stronger apparent "break" than the
+   actual sexenio boundary. Root cause: with a very long "before"
+   segment (thousands of daily/monthly observations spanning 20-35
+   non-linear years) fit to a single straight line, almost ANY recent
+   cutoff date will appear to diverge from that line — not because
+   that specific date is special, but because a straight line is a
+   poor global model for decades of non-linear macro history. The
+   Chow test implementation itself is correct; the error was applying
+   it without first validating that the test is well-specified for
+   this use case.
+
+   Decision: `since_last_break` removed from `get_all_windows()` (the
+   production window set). `structural_breaks.py` and
+   `get_since_break_window()` are retained in the codebase, explicitly
+   marked as research/reference material, not production-validated.
+   `full_history` and `rolling_10y` are unaffected by this issue (they
+   don't depend on searching for or testing a candidate break date)
+   and remain the two production reference windows.
+
+   This finding also prompted a reconsideration of the underlying
+   question the project was trying to answer with structural breaks:
+   rather than asking "did a break occur at this specific political
+   boundary" (which conflates timing with attribution — e.g., COVID
+   happened during AMLO's term but wasn't caused by his policies), a
+   richer and better-specified question is "how did Mexico's economy
+   behave, in terms of volatility and resilience, during each full
+   sexenio, and how did that compare to external shocks of known,
+   externally-measured magnitude (oil prices, global risk indices)
+   during the same period." This reframing is documented as a future
+   research direction in the README, not yet implemented.
+
 ---
 
 ## Appendix: Confirmed Data Ranges (as of first successful pull, 2026-09-12)
