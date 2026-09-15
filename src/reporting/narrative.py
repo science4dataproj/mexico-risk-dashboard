@@ -21,15 +21,15 @@ from src.reporting.domains import DOMAIN_MAP
 
 # Human-readable series names for narrative text.
 SERIES_DISPLAY_NAMES = {
-    "fx_rate_fix": "el tipo de cambio",
-    "international_reserves": "las reservas internacionales",
-    "m1": "M1",
-    "m2": "M2",
-    "cetes_28d": "los CETES a 28 días",
-    "target_rate": "la tasa objetivo de Banxico",
-    "quarterly_gdp": "el PIB trimestral",
-    "unemployment_rate": "la tasa de desocupación",
-    "cpi": "el INPC",
+    "fx_rate_fix": ("el tipo de cambio", False),
+    "international_reserves": ("las reservas internacionales", True),
+    "m1": ("M1", False),
+    "m2": ("M2", False),
+    "cetes_28d": ("los CETES a 28 días", True),
+    "target_rate": ("la tasa objetivo de Banxico", False),
+    "quarterly_gdp": ("el PIB trimestral", False),
+    "unemployment_rate": ("la tasa de desocupación", False),
+    "cpi": ("el INPC", False),
 }
 
 
@@ -42,6 +42,40 @@ def _get_stat(results_df: pd.DataFrame, series_key: str, window_type: str, stat_
     return match["value"].iloc[0] if not match.empty else None
 
 
+def _get_significance(results_df: pd.DataFrame, series_key: str, window_type: str, stat_name: str) -> bool:
+    """Returns whether a stat's flag_significant is True. Defaults to
+    False if the row is missing OR the flag_significant column itself
+    isn't present (e.g. minimal test fixtures) — never assumes
+    significance when it can't be confirmed."""
+    match = results_df[
+        (results_df["series_key"] == series_key)
+        & (results_df["window_type"] == window_type)
+        & (results_df["stat_name"] == stat_name)
+    ]
+    if match.empty or "flag_significant" not in match.columns:
+        return False
+    val = match["flag_significant"].iloc[0]
+    return bool(val) if pd.notna(val) else False
+
+
+def generate_series_narrative(results_df: pd.DataFrame, series_key: str, window_type: str = "rolling_10y") -> str:
+    """Builds one plain-language sentence describing a single series."""
+    display_name, is_plural = SERIES_DISPLAY_NAMES.get(series_key, (series_key, False))
+    verb = "están" if is_plural else "está"
+
+    percentile = _get_stat(results_df, series_key, window_type, "percentile_rank")
+    ac1_tau = _get_stat(results_df, series_key, window_type, "ac1_trend_tau")
+    ac1_sig = _get_significance(results_df, series_key, window_type, "ac1_trend_tau")
+    var_tau = _get_stat(results_df, series_key, window_type, "variance_trend_tau")
+    var_sig = _get_significance(results_df, series_key, window_type, "variance_trend_tau")
+
+    level = _level_phrase(percentile)
+    trend = _trend_phrase(ac1_tau, ac1_sig, var_tau, var_sig)
+
+    sentence = f"{display_name} {verb} {level}, {trend}."
+    return sentence[0].upper() + sentence[1:]
+
+
 def _level_phrase(percentile: float | None) -> str:
     if percentile is None:
         return "sin datos de nivel disponibles"
@@ -52,27 +86,23 @@ def _level_phrase(percentile: float | None) -> str:
     return f"en un nivel típico dentro de su historia (percentil {percentile:.0f})"
 
 
-def _trend_phrase(ac1_tau: float | None, var_tau: float | None) -> str:
+def _trend_phrase(ac1_tau, ac1_sig, var_tau, var_sig) -> str:
     if ac1_tau is None or var_tau is None:
         return "sin suficiente información de tendencia"
-    if ac1_tau > 0 and var_tau > 0:
-        return "mostrando una tendencia consistente hacia mayor inestabilidad"
-    if ac1_tau < 0 and var_tau < 0:
-        return "mostrando una tendencia hacia mayor estabilidad"
-    return "sin una tendencia clara y consistente de estabilidad o fragilidad"
 
+    ac1_rising = ac1_sig and ac1_tau > 0
+    var_rising = var_sig and var_tau > 0
+    ac1_falling = ac1_sig and ac1_tau < 0
+    var_falling = var_sig and var_tau < 0
 
-def generate_series_narrative(results_df: pd.DataFrame, series_key: str, window_type: str = "rolling_10y") -> str:
-    """Builds one plain-language sentence describing a single series."""
-    display_name = SERIES_DISPLAY_NAMES.get(series_key, series_key)
-    percentile = _get_stat(results_df, series_key, window_type, "percentile_rank")
-    ac1_tau = _get_stat(results_df, series_key, window_type, "ac1_trend_tau")
-    var_tau = _get_stat(results_df, series_key, window_type, "variance_trend_tau")
+    if ac1_rising and var_rising:
+        return "mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad"
+    if ac1_falling and var_falling:
+        return "mostrando una tendencia consistente y estadísticamente significativa hacia mayor estabilidad"
+    if ac1_sig or var_sig:
+        return "mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente"
+    return "sin una tendencia estadísticamente significativa de estabilidad o fragilidad"
 
-    level = _level_phrase(percentile)
-    trend = _trend_phrase(ac1_tau, var_tau)
-
-    return f"{display_name.capitalize()} está {level}, {trend}."
 
 
 def generate_domain_narrative(results_df: pd.DataFrame, domain_key: str, window_type: str = "rolling_10y") -> str:
