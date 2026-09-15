@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-09-15T16:41:31.694236+00:00",
+  "composite_score": 62.9,
+  "composite_label": "Tendencia a monitorear",
+  "domains": [
+    {
+      "domain_key": "external_stability",
+      "display_name": "Estabilidad externa",
+      "score": 62.5,
+      "label": "Tendencia a monitorear",
+      "n_signals_active": 8,
+      "n_signals_possible": 12,
+      "narrative": "El tipo de cambio está en un nivel históricamente bajo (percentil 4), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente. Las reservas internacionales están en un nivel históricamente alto (percentil 100), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad."
+    },
+    {
+      "domain_key": "liquidity",
+      "display_name": "Liquidez",
+      "score": 81.2,
+      "label": "Señal fuerte de fragilidad",
+      "n_signals_active": 10,
+      "n_signals_possible": 12,
+      "narrative": "M1 está en un nivel históricamente alto (percentil 98), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente. M2 está en un nivel históricamente alto (percentil 100), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad."
+    },
+    {
+      "domain_key": "rates",
+      "display_name": "Tasas y política monetaria",
+      "score": 100.0,
+      "label": "Señal fuerte de fragilidad",
+      "n_signals_active": 12,
+      "n_signals_possible": 12,
+      "narrative": "Los CETES a 28 días están en un nivel históricamente bajo (percentil 25), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad. La tasa objetivo de Banxico está en un nivel históricamente bajo (percentil 28), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad."
+    },
+    {
+      "domain_key": "real_economy",
+      "display_name": "Economía real",
+      "score": 8.3,
+      "label": "Sin cambios relevantes",
+      "n_signals_active": 1,
+      "n_signals_possible": 9,
+      "narrative": "El PIB trimestral está en un nivel históricamente alto (percentil 99), sin suficiente información de tendencia. La tasa de desocupación está en un nivel históricamente bajo (percentil 29), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente."
+    },
+    {
+      "domain_key": "prices",
+      "display_name": "Precios",
+      "score": 62.5,
+      "label": "Tendencia a monitorear",
+      "n_signals_active": 4,
+      "n_signals_possible": 6,
+      "narrative": "El INPC está en un nivel históricamente alto (percentil 97), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad."
+    }
+  ]
+}

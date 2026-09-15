@@ -7,8 +7,14 @@ import pandas as pd
 from src.reporting.narrative import generate_series_narrative, generate_domain_narrative
 
 
-def _row(series_key, window_type, stat_name, value):
-    return {"series_key": series_key, "window_type": window_type, "stat_name": stat_name, "value": value}
+def _row(series_key, window_type, stat_name, value, flag_significant=True):
+    return {
+        "series_key": series_key,
+        "window_type": window_type,
+        "stat_name": stat_name,
+        "value": value,
+        "flag_significant": flag_significant,
+    }
 
 
 def test_narrative_describes_high_level_and_rising_instability():
@@ -91,3 +97,55 @@ def test_thresholds_match_manually_validated_conclusions_from_real_data():
             assert "alto" in phrase
         else:
             assert "bajo" in phrase    
+
+
+def test_plural_subjects_use_plural_verb():
+    rows = [
+        _row("international_reserves", "rolling_10y", "percentile_rank", 99.5),
+        _row("international_reserves", "rolling_10y", "ac1_trend_tau", 0.3),
+        _row("international_reserves", "rolling_10y", "variance_trend_tau", 0.4),
+    ]
+    df = pd.DataFrame(rows)
+    text = generate_series_narrative(df, "international_reserves")
+    assert "están" in text
+    assert "está " not in text  # asegura que no quedó el singular incorrecto
+
+
+def test_acronyms_keep_their_uppercase_letters():
+    rows = [
+        _row("cpi", "rolling_10y", "percentile_rank", 97.1),
+        _row("cpi", "rolling_10y", "ac1_trend_tau", 0.1),
+        _row("cpi", "rolling_10y", "variance_trend_tau", 0.1),
+    ]
+    df = pd.DataFrame(rows)
+    text = generate_series_narrative(df, "cpi")
+    assert "INPC" in text
+    assert "inpc" not in text
+
+def _trend_phrase(ac1_tau, ac1_sig, var_tau, var_sig) -> str:
+    if ac1_tau is None or var_tau is None:
+        return "sin suficiente información de tendencia"
+
+    ac1_rising = ac1_sig and ac1_tau > 0
+    var_rising = var_sig and var_tau > 0
+    ac1_falling = ac1_sig and ac1_tau < 0
+    var_falling = var_sig and var_tau < 0
+
+    if ac1_rising and var_rising:
+        return "mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad"
+    if ac1_falling and var_falling:
+        return "mostrando una tendencia consistente y estadísticamente significativa hacia mayor estabilidad"
+    if ac1_sig or var_sig:
+        return "mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente"
+    return "sin una tendencia estadísticamente significativa de estabilidad o fragilidad"
+
+def test_trend_phrase_requires_significance_not_just_sign():
+    text = _trend_phrase(ac1_tau=0.353, ac1_sig=True, var_tau=0.017, var_sig=False)
+    assert "tendencia consistente y estadísticamente significativa" not in text
+    assert "significativa solo en uno" in text
+
+
+def test_trend_phrase_confirms_consistent_when_both_significant():
+    text = _trend_phrase(ac1_tau=0.562, ac1_sig=True, var_tau=0.686, var_sig=True)
+    assert "consistente" in text
+    assert "inestabilidad" in text
