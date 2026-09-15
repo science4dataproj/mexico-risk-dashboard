@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Riesgo Económico — México</title>
+<meta name="description" content="Monitoreo estadístico de fragilidad macroeconómica en México, construido con datos oficiales de Banxico, INEGI y SHCP.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #eef0ec;
+    --paper-raised: #f6f7f4;
+    --ink: #1d211f;
+    --ink-soft: #4a5049;
+    --ink-faint: #7c8177;
+    --line: #c9ccc3;
+    --line-soft: #dcded7;
+    --accent: #a8622c;
+    --accent-soft: #eadfd3;
+    --stable: #3d5c56;
+    --stable-soft: #dde6e3;
+
+    --serif: 'IBM Plex Serif', Georgia, serif;
+    --sans: 'IBM Plex Sans', -apple-system, sans-serif;
+    --mono: 'IBM Plex Mono', 'Courier New', monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { background: var(--paper); }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  header.top {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .kicker {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin: 0 0 14px;
+    letter-spacing: 0.02em;
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(28px, 4.2vw, 40px);
+    line-height: 1.15;
+    margin: 0 0 12px;
+    max-width: 15ch;
+  }
+
+  .lede {
+    font-family: var(--sans);
+    color: var(--ink-soft);
+    font-size: 16px;
+    max-width: 60ch;
+    margin: 0;
+  }
+
+  /* ---- Gauge ---- */
+
+  section.gauge {
+    padding: 48px 0 40px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .gauge-top {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+  }
+
+  .gauge-number {
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: clamp(52px, 9vw, 76px);
+    line-height: 1;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .gauge-label {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 17px;
+    padding: 5px 12px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+  .gauge-label.stable { border-color: var(--stable); color: var(--stable); }
+
+  .scale-track {
+    position: relative;
+    height: 10px;
+    background: linear-gradient(to right,
+      var(--stable-soft) 0%, var(--stable-soft) 33%,
+      var(--accent-soft) 33%, var(--accent-soft) 66%,
+      #e3c7ac 66%, #e3c7ac 100%);
+    border: 1px solid var(--line);
+    border-radius: 2px;
+    margin-bottom: 10px;
+  }
+
+  .scale-marker {
+    position: absolute;
+    top: -7px;
+    width: 3px;
+    height: 24px;
+    background: var(--ink);
+    transform: translateX(-1.5px);
+  }
+  .scale-marker::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 6px solid var(--ink);
+  }
+
+  .scale-legend {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  .gauge-meta {
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-top: 20px;
+  }
+
+  /* ---- Domains ---- */
+
+  section.domains { padding: 44px 0 8px; }
+
+  section.domains > h2 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: none;
+    color: var(--ink-faint);
+    margin: 0 0 22px;
+  }
+
+  .domain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+
+  @media (max-width: 640px) {
+    .domain-grid { grid-template-columns: 1fr; }
+  }
+
+  .domain-card {
+    background: var(--paper-raised);
+    padding: 24px;
+  }
+  .domain-card--wide {
+    grid-column: 1 / -1;
+  }
+
+  .domain-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .domain-name {
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 18px;
+  }
+
+  .domain-score {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--ink-soft);
+    white-space: nowrap;
+  }
+
+  .domain-bar-track {
+    height: 5px;
+    background: var(--line-soft);
+    border-radius: 2px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .domain-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .domain-bar-fill.stable { background: var(--stable); }
+
+  .domain-status {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .domain-status.stable { color: var(--stable); }
+
+  .domain-narrative {
+    font-family: var(--sans);
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .fiscal-note {
+    font-family: var(--sans);
+    font-size: 13.5px;
+    color: var(--ink-faint);
+    border: 1px dashed var(--line);
+    padding: 16px 20px;
+    margin-top: 1px;
+    background: var(--paper-raised);
+  }
+  .fiscal-note strong { color: var(--ink-soft); }
+
+  /* ---- Footer ---- */
+
+  footer {
+    margin-top: 56px;
+    padding: 28px 0 56px;
+    border-top: 1px solid var(--line);
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-faint);
+  }
+
+  footer p { max-width: 62ch; margin: 0 0 10px; }
+  footer nav a { margin-right: 18px; }
+
+  /* ---- States ---- */
+
+  .state-msg {
+    font-family: var(--sans);
+    color: var(--ink-soft);
+    padding: 40px 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .domain-card, .gauge-number { transition: opacity 0.3s ease; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <p class="kicker">Instrumento de monitoreo estadístico con actualización mensual automatizada</p>
+    <h1>Panel de riesgo económico de México</h1>
+    <p class="lede">Un índice de fragilidad construido a partir de series oficiales de Banxico, INEGI y SHCP — no mide si la economía va "bien" o "mal", mide si su comportamiento se está volviendo más inestable con el tiempo.</p>
+  </header>
+
+  <main>
+    <section class="gauge" id="gauge-section" aria-live="polite">
+      <div class="state-msg" id="loading-msg">Cargando el panel más reciente…</div>
+    </section>
+
+    <section class="domains" id="domains-section" style="display:none">
+      <h2>Desglose por dominio</h2>
+      <div class="domain-grid" id="domain-grid"></div>
+      <div class="fiscal-note">
+        <strong>Solvencia fiscal (deuda pública, % del PIB)</strong> no forma parte de este índice. La serie se actualiza solo una vez al año, así que no hay suficientes observaciones para calcular una tendencia rodante de estabilidad — el mismo criterio de rigor estadístico que se aplica al resto del panel. Se está evaluando cómo incorporarla de otra forma en una futura versión.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Este panel mide <strong>fragilidad estadística</strong> (qué tan inestable se está comportando cada serie respecto a su propia historia), no desempeño económico ni una predicción de crisis. Las cifras de nivel (percentiles) y las tendencias de estabilidad se calculan por separado a propósito — ver la metodología completa en el repositorio.</p>
+    <p id="updated-line"></p>
+    <nav>
+      <a href="https://github.com/science4dataproj/mexico-risk-dashboard" target="_blank" rel="noopener">Repositorio y metodología</a>
+      <a href="https://github.com/science4dataproj/mexico-risk-dashboard/blob/main/data/SERIES_METADATA.md" target="_blank" rel="noopener">Fuentes y decisiones de diseño</a>
+    </nav>
+  </footer>
+</div>
+
+<script>
+(async function () {
+  const gaugeSection = document.getElementById('gauge-section');
+  const domainsSection = document.getElementById('domains-section');
+  const domainGrid = document.getElementById('domain-grid');
+  const updatedLine = document.getElementById('updated-line');
+
+  function isStableLabel(label) {
+    return label === 'Sin cambios relevantes';
+  }
+
+  function renderGauge(data) {
+    const pct = Math.max(0, Math.min(100, data.composite_score));
+    const stable = isStableLabel(data.composite_label);
+
+    gaugeSection.innerHTML = `
+      <div class="gauge-top">
+        <span class="gauge-number">${data.composite_score.toFixed(1)}</span>
+        <span class="gauge-label ${stable ? 'stable' : ''}">${data.composite_label}</span>
+      </div>
+      <div class="scale-track" role="img" aria-label="Índice compuesto: ${data.composite_score.toFixed(1)} de 100, ${data.composite_label}">
+        <div class="scale-marker" style="left:${pct}%"></div>
+      </div>
+      <div class="scale-legend">
+        <span>Sin cambios relevantes</span>
+        <span>Tendencia a monitorear</span>
+        <span>Señal fuerte de fragilidad</span>
+      </div>
+      <p class="gauge-meta">Promedio simple, sin ponderar, de 5 dominios evaluables (estabilidad externa, liquidez, tasas, economía real, precios). Construido solo con tendencias de autocorrelación y varianza estadísticamente significativas — nunca con el nivel actual de cada serie.</p>
+    `;
+  }
+
+  function renderDomains(domains) {
+    const isOdd = domains.length % 2 !== 0;
+    domainGrid.innerHTML = domains.map((d, i) => {
+      const stable = isStableLabel(d.label);
+      const isLast = i === domains.length - 1;
+      const wideClass = (isOdd && isLast) ? ' domain-card--wide' : '';
+      return `
+        <article class="domain-card${wideClass}">
+          <div class="domain-head">
+            <span class="domain-name">${d.display_name}</span>
+            <span class="domain-score">${d.score.toFixed(1)}</span>
+          </div>
+          <div class="domain-bar-track">
+            <div class="domain-bar-fill ${stable ? 'stable' : ''}" style="width:${Math.max(0, Math.min(100, d.score))}%"></div>
+          </div>
+          <p class="domain-status ${stable ? 'stable' : ''}">${d.label}</p>
+          <p class="domain-narrative">${d.narrative}</p>
+        </article>
+      `;
+    }).join('');
+    domainsSection.style.display = '';
+  }
+
+  function renderError() {
+    gaugeSection.innerHTML = `<div class="state-msg">No se pudo cargar el panel de riesgo en este momento. Los datos viven en <code>data/processed/risk_scorecard.json</code> dentro del repositorio — si el archivo se movió o renombró, este mensaje es la señal de que hay que actualizar la ruta aquí.</div>`;
+  }
+
+  try {
+    const res = await fetch('data/processed/risk_scorecard.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('fetch failed: ' + res.status);
+    const data = await res.json();
+
+    renderGauge(data);
+    renderDomains(data.domains);
+
+    const updated = new Date(data.generated_at);
+    updatedLine.textContent = 'Última actualización: ' + updated.toLocaleDateString('es-MX', {
+      year: 'numeric', month: 'long', day: 'numeric'
+    });
+  } catch (err) {
+    renderError();
+    console.error(err);
+  }
+})();
+</script>
+
+</body>
+</html>
