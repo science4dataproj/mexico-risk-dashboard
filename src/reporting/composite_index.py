@@ -4,16 +4,19 @@ src/reporting/composite_index.py
 Computes the domain-level fragility scorecard and the composite
 fragility index from data/processed/analysis_results.csv.
 
-Design principle (see planning discussion): the score measures RISING
-FRAGILITY, not economic performance. It is built exclusively from
-trend statistics (ac1_trend_tau, variance_trend_tau,
-critical_slowing_down_flag) — never from level z-scores or percentiles.
+Design principle: the score measures RISING FRAGILITY, not economic
+performance. It is built exclusively from trend statistics
+(ac1_trend_tau, variance_trend_tau, critical_slowing_down_flag) —
+never from level z-scores or percentiles.
 
 The composite index is a simple, UNWEIGHTED average of the 5 eligible
 domain sub-scores (fiscal_solvency is excluded — see domains.py).
 
-Bilingual design (2026-09): status labels are stored per language, same
-pattern as domains.py — see SERIES_METADATA.md, Decisions Log #15.
+Bilingual design: status labels are stored per language. Each label
+also carries a language-independent `status_id` ("stable" | "monitor"
+| "fragile") so downstream consumers (the frontend, the stakeholder
+narrative lookup) never need to string-match a translated label to
+know which status band a score falls into.
 """
 
 from dataclasses import dataclass, field
@@ -24,20 +27,23 @@ from src.reporting.domains import (
     DOMAIN_MAP,
     DOMAIN_METADATA,
     get_composite_domains,
-    get_display_name,
-    SUPPORTED_LANGUAGES,
 )
 
 PRODUCTION_WINDOWS = {"full_history", "rolling_10y"}
 TREND_STATS = {"ac1_trend_tau", "variance_trend_tau"}
 
-# Score thresholds and their labels, per language. Order matters:
-# first threshold that the score is <= wins.
+# (upper_threshold, status_id, {lang: label})
 SCORE_LABELS = [
-    (33, {"es": "Sin cambios relevantes", "en": "No notable change"}),
-    (66, {"es": "Tendencia a monitorear", "en": "Trend to monitor"}),
-    (100, {"es": "Señal fuerte de fragilidad", "en": "Strong fragility signal"}),
+    (33, "stable", {"es": "Sin cambios relevantes", "en": "No notable change"}),
+    (66, "monitor", {"es": "Tendencia a monitorear", "en": "Trend to monitor"}),
+    (100, "fragile", {"es": "Señal fuerte de fragilidad", "en": "Strong fragility signal"}),
 ]
+
+
+@dataclass
+class ScoreLabel:
+    status_id: str
+    text: dict[str, str]
 
 
 @dataclass
@@ -45,25 +51,24 @@ class DomainScore:
     domain_key: str
     display_name: dict[str, str]
     score: float
-    label: dict[str, str]
+    label: ScoreLabel
     n_signals_active: int
     n_signals_possible: int
-    narrative: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass
 class CompositeResult:
     composite_score: float
-    composite_label: dict[str, str]
+    composite_label: ScoreLabel
     domain_scores: list[DomainScore] = field(default_factory=list)
 
 
-def label_for_score(score: float) -> dict[str, str]:
-    """Returns the {lang: label} dict for a given score."""
-    for threshold, label in SCORE_LABELS:
+def label_for_score(score: float) -> ScoreLabel:
+    for threshold, status_id, text in SCORE_LABELS:
         if score <= threshold:
-            return label
-    return SCORE_LABELS[-1][1]
+            return ScoreLabel(status_id=status_id, text=text)
+    last = SCORE_LABELS[-1]
+    return ScoreLabel(status_id=last[1], text=last[2])
 
 
 def _is_active_trend_signal(row: pd.Series) -> bool:
