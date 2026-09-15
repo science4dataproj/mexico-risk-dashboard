@@ -272,6 +272,30 @@
     margin: 0;
   }
 
+  .narrative-toggle {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .narrative-toggle button {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--ink-faint);
+    padding: 3px 9px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  .narrative-toggle button.active {
+    border-color: var(--ink-soft);
+    color: var(--ink-soft);
+  }
+  .narrative-toggle button:hover:not(.active) {
+    border-color: var(--ink-faint);
+  }
+
   .fiscal-note {
     font-family: var(--sans);
     font-size: 13.5px;
@@ -366,6 +390,8 @@
       navRepo: "Repositorio",
       navMethodology: "Metodología del índice",
       navSources: "Fuentes y decisiones de diseño",
+      toggleTechnical: "Hallazgo técnico",
+      toggleInterpretation: "Interpretación",
       locale: "es-MX",
       ariaGaugeLabel: (score, label) => `Índice compuesto: ${score} de 100, ${label}`,
       errorMsg: 'No se pudo cargar el panel de riesgo en este momento. Los datos viven en <code>data/processed/risk_scorecard.json</code> dentro del repositorio — si el archivo se movió o renombró, este mensaje es la señal de que hay que actualizar la ruta aquí.',
@@ -386,6 +412,8 @@
       navRepo: "Repository",
       navMethodology: "Index methodology",
       navSources: "Sources & design decisions",
+      toggleTechnical: "Technical finding",
+      toggleInterpretation: "Interpretation",
       locale: "en-US",
       ariaGaugeLabel: (score, label) => `Composite index: ${score} out of 100, ${label}`,
       errorMsg: 'Could not load the risk panel right now. The data lives at <code>data/processed/risk_scorecard.json</code> in the repository — if the file was moved or renamed, this message is the signal to update the path here.',
@@ -394,6 +422,7 @@
 
   let currentLang = 'es';
   let scorecardData = null;
+  const cardView = {}; // domain_key -> 'technical' | 'stakeholder', per-card toggle state
 
   const gaugeSection = document.getElementById('gauge-section');
   const domainsSection = document.getElementById('domains-section');
@@ -406,8 +435,8 @@
     return div.innerHTML;
   }
 
-  function isStableLabel(label) {
-    return label === 'Sin cambios relevantes' || label === 'No notable change';
+  function isStableLabel(labelObj) {
+    return labelObj.status_id === 'stable';
   }
 
   function applyStaticStrings(lang) {
@@ -434,7 +463,7 @@
     const s = STRINGS[lang];
     const pct = Math.max(0, Math.min(100, data.composite_score));
     const label = data.composite_label[lang];
-    const stable = isStableLabel(label);
+    const stable = isStableLabel(data.composite_label);
 
     gaugeSection.innerHTML = `
       <div class="gauge-top">
@@ -454,14 +483,17 @@
   }
 
   function renderDomains(domains, lang) {
+    const s = STRINGS[lang];
     const isOdd = domains.length % 2 !== 0;
     domainGrid.innerHTML = domains.map((d, i) => {
       const label = d.label[lang];
-      const stable = isStableLabel(label);
+      const stable = isStableLabel(d.label);
       const isLast = i === domains.length - 1;
       const wideClass = (isOdd && isLast) ? ' domain-card--wide' : '';
+      const view = cardView[d.domain_key] || 'technical';
+      const shownText = view === 'technical' ? d.narrative[lang] : d.narrative_stakeholder[lang];
       return `
-        <article class="domain-card${wideClass}">
+        <article class="domain-card${wideClass}" data-domain="${d.domain_key}">
           <div class="domain-head">
             <span class="domain-name">${escapeHtml(d.display_name[lang])}</span>
             <span class="domain-score">${d.score.toFixed(1)}</span>
@@ -470,7 +502,11 @@
             <div class="domain-bar-fill ${stable ? 'stable' : ''}" style="width:${Math.max(0, Math.min(100, d.score))}%"></div>
           </div>
           <p class="domain-status ${stable ? 'stable' : ''}">${escapeHtml(label)}</p>
-          <p class="domain-narrative">${escapeHtml(d.narrative[lang])}</p>
+          <div class="narrative-toggle" role="tablist">
+            <button type="button" data-view="technical" class="${view === 'technical' ? 'active' : ''}">${escapeHtml(s.toggleTechnical)}</button>
+            <button type="button" data-view="stakeholder" class="${view === 'stakeholder' ? 'active' : ''}">${escapeHtml(s.toggleInterpretation)}</button>
+          </div>
+          <p class="domain-narrative">${escapeHtml(shownText)}</p>
         </article>
       `;
     }).join('');
@@ -504,6 +540,17 @@
     currentLang = btn.dataset.lang;
     this.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === btn));
     renderAll(currentLang);
+  });
+
+  domainGrid.addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-view]');
+    if (!btn) return;
+    const card = btn.closest('[data-domain]');
+    if (!card) return;
+    const domainKey = card.dataset.domain;
+    if (cardView[domainKey] === btn.dataset.view) return;
+    cardView[domainKey] = btn.dataset.view;
+    renderDomains(scorecardData.domains, currentLang);
   });
 
   applyStaticStrings(currentLang);
