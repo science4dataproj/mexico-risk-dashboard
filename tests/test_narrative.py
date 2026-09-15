@@ -226,3 +226,31 @@ def test_english_missing_trend_data_reads_as_complete_sentence():
     text = generate_series_narrative(df, "quarterly_gdp", lang="en")
     assert "with insufficient trend data available" in text
     assert ", insufficient trend data" not in text  # the old, broken phrasing
+
+
+from src.reporting.narrative import generate_composite_technical_summary
+from src.reporting.composite_index import DomainScore, ScoreLabel
+
+
+def test_composite_technical_summary_lists_flagged_domains():
+    domains = [
+        DomainScore("liquidity", {"es": "Liquidez", "en": "Liquidity"}, 81.2,
+                     ScoreLabel("fragile", {"es": "Señal fuerte de fragilidad", "en": "Strong fragility signal"}), 3, 6),
+        DomainScore("prices", {"es": "Precios", "en": "Prices"}, 20.0,
+                     ScoreLabel("stable", {"es": "Sin cambios relevantes", "en": "No notable change"}), 0, 2),
+    ]
+    result = generate_composite_technical_summary(domains, 50.6)
+    assert "1 de 2 dominio muestra" in result["es"]
+    assert "Liquidez" in result["es"]
+    assert "Precios" not in result["es"]
+    assert "1 of 2 domain shows" in result["en"]
+
+
+def test_composite_technical_summary_handles_zero_flagged():
+    domains = [
+        DomainScore("prices", {"es": "Precios", "en": "Prices"}, 10.0,
+                     ScoreLabel("stable", {"es": "Sin cambios relevantes", "en": "No notable change"}), 0, 2),
+    ]
+    result = generate_composite_technical_summary(domains, 10.0)
+    assert "Ninguno de los" in result["es"]
+    assert "None of the" in result["en"]

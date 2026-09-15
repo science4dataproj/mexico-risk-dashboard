@@ -105,3 +105,31 @@ def get_stakeholder_explanation(domain_key: str, status_id: str, lang: str) -> s
             f"No stakeholder explanation for domain='{domain_key}', "
             f"status_id='{status_id}', lang='{lang}'"
         ) from e
+
+# --- Composite-level stakeholder explanations, by status_id and language ---
+# Same writing rules as the domain-level explanations above: never
+# predict a crisis, never give specific financial advice, always
+# distinguish "the data shows growing instability" from "something bad
+# is happening now."
+
+COMPOSITE_STAKEHOLDER_EXPLANATIONS: dict[str, dict[str, str]] = {
+    "stable": {
+        "es": "En conjunto, los indicadores que monitorea este panel se están comportando de forma predecible. No hay, por ahora, una señal generalizada de que la economía esté perdiendo capacidad de absorber choques.",
+        "en": "Taken together, the indicators this panel tracks are behaving predictably. There's no broad-based sign, for now, that the economy is losing its ability to absorb shocks.",
+    },
+    "monitor": {
+        "es": "Varios de los indicadores que monitorea este panel muestran cierta inestabilidad reciente, aunque no de forma generalizada. Es un momento para seguir de cerca la evolución, no para sacar conclusiones todavía.",
+        "en": "Several of the indicators this panel tracks show some recent instability, though not broadly across the board. This is a moment to keep watching closely, not to draw conclusions yet.",
+    },
+    "fragile": {
+        "es": "Varios de los indicadores que monitorea este panel muestran, de forma consistente y estadísticamente significativa, un comportamiento cada vez menos predecible. Esto no significa que una crisis sea inevitable — significa que el sistema está absorbiendo más presión de la habitual, y vale la pena prestarle atención sostenida, no solo puntual.",
+        "en": "Several of the indicators this panel tracks show a consistently, statistically significant pattern of becoming less predictable. This doesn't mean a crisis is inevitable — it means the system is absorbing more pressure than usual, and it's worth paying sustained, not just occasional, attention to it.",
+    },
+}
+
+
+def get_composite_stakeholder_explanation(status_id: str, lang: str) -> str:
+    try:
+        return COMPOSITE_STAKEHOLDER_EXPLANATIONS[status_id][lang]
+    except KeyError as e:
+        raise KeyError(f"No composite stakeholder explanation for status_id='{status_id}', lang='{lang}'") from e

@@ -1,11 +1,5 @@
 """
 src/reporting/run_reporting.py
-
-Orchestrates the reporting layer: reads data/processed/analysis_results.csv,
-computes the composite fragility index and domain scorecard, attaches
-bilingual technical narrative AND bilingual stakeholder-facing
-explanations to each domain, and saves the combined result to
-data/processed/risk_scorecard.json.
 """
 
 import json
@@ -16,8 +10,8 @@ import pandas as pd
 
 from src.config import DATA_PROCESSED_DIR
 from src.reporting.composite_index import compute_composite_index
-from src.reporting.narrative import generate_domain_narrative_bilingual
-from src.reporting.stakeholder_text import get_stakeholder_explanation
+from src.reporting.narrative import generate_domain_narrative_bilingual, generate_composite_technical_summary
+from src.reporting.stakeholder_text import get_stakeholder_explanation, get_composite_stakeholder_explanation
 
 RESULTS_PATH = Path(DATA_PROCESSED_DIR) / "analysis_results.csv"
 SCORECARD_PATH = Path(DATA_PROCESSED_DIR) / "risk_scorecard.json"
@@ -49,10 +43,18 @@ def build_scorecard() -> dict:
             "narrative_stakeholder": stakeholder,
         })
 
+    composite_narrative = generate_composite_technical_summary(composite.domain_scores, composite.composite_score)
+    composite_stakeholder = {
+        lang: get_composite_stakeholder_explanation(composite.composite_label.status_id, lang)
+        for lang in ("es", "en")
+    }
+
     return {
         "generated_at": datetime.now(UTC).isoformat(),
         "composite_score": composite.composite_score,
         "composite_label": {"status_id": composite.composite_label.status_id, **composite.composite_label.text},
+        "composite_narrative": composite_narrative,
+        "composite_narrative_stakeholder": composite_stakeholder,
         "domains": domains_output,
     }
 
@@ -73,7 +75,9 @@ if __name__ == "__main__":
     print(f"Saved risk scorecard to {path}\n")
     with open(path, encoding="utf-8") as f:
         data = json.load(f)
-    print(f"Composite: {data['composite_score']} — {data['composite_label']['status_id']}\n")
+    print(f"Composite: {data['composite_score']} — {data['composite_label']['status_id']}")
+    print(f"  Técnico: {data['composite_narrative']['es']}")
+    print(f"  General: {data['composite_narrative_stakeholder']['es']}\n")
     for d in data["domains"]:
         print(f"[{d['label']['status_id']}] {d['display_name']['es']} (score: {d['score']})")
         print(f"  Técnico: {d['narrative']['es']}")

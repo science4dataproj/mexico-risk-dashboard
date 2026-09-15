@@ -208,9 +208,14 @@
 
   .gauge-meta {
     font-family: var(--sans);
-    font-size: 13px;
-    color: var(--ink-faint);
-    margin-top: 20px;
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .gauge-narrative-toggle {
+    margin-top: 22px;
   }
 
   /* ---- Domains ---- */
@@ -405,7 +410,6 @@
       gaugeHeadingSub: "Resume, en un solo número de 0 a 100, qué tan inestables se están comportando en conjunto los cinco dominios que monitorea este panel — entre más alto, más señales de fragilidad creciente hay actualmente.",
       methodologyLinkText: "Ver metodología completa: cómo se calcula este número",
       scaleLegend: ["Sin cambios relevantes", "Tendencia a monitorear", "Señal fuerte de fragilidad"],
-      gaugeMeta: "Promedio simple, sin ponderar, de 5 dominios evaluables (estabilidad externa, liquidez, tasas, economía real, precios). Construido solo con tendencias de autocorrelación y varianza estadísticamente significativas — nunca con el nivel actual de cada serie.",
       domainsHeading: "Desglose por dominio",
       fiscalNoteStrong: "Solvencia fiscal (deuda pública, % del PIB)",
       fiscalNote: " no forma parte de este índice. La serie se actualiza solo una vez al año, así que no hay suficientes observaciones para calcular una tendencia rodante de estabilidad — el mismo criterio de rigor estadístico que se aplica al resto del panel. Se está evaluando cómo incorporarla de otra forma en una futura versión.",
@@ -430,7 +434,6 @@
       gaugeHeadingSub: "Summarizes, in a single number from 0 to 100, how unstable the five domains this panel tracks are behaving as a whole — the higher the number, the more signs of growing fragility right now.",
       methodologyLinkText: "See full methodology: how this number is calculated",
       scaleLegend: ["No notable change", "Trend to monitor", "Strong fragility signal"],
-      gaugeMeta: "Simple, unweighted average across 5 eligible domains (external stability, liquidity, rates, real economy, prices). Built only from statistically significant autocorrelation and variance trends — never from a series' current level.",
       domainsHeading: "Breakdown by domain",
       fiscalNoteStrong: "Fiscal solvency (public debt, % of GDP)",
       fiscalNote: " is not part of this index. The series is updated only once a year, so there isn't enough data to calculate a rolling stability trend — the same statistical rigor applied to the rest of the panel. How to incorporate it differently is under evaluation for a future version.",
@@ -449,6 +452,7 @@
 
   let currentLang = 'es';
   let scorecardData = null;
+  let gaugeView = 'technical'; // 'technical' | 'stakeholder' — one toggle for the composite index
   const cardView = {}; // domain_key -> 'technical' | 'stakeholder', per-card toggle state
 
   const gaugeSection = document.getElementById('gauge-section');
@@ -489,11 +493,12 @@
     if (loadingMsg) loadingMsg.textContent = s.loading;
   }
 
-  function renderGauge(data, lang) {
+  function renderGauge(data, lang, view) {
     const s = STRINGS[lang];
     const pct = Math.max(0, Math.min(100, data.composite_score));
     const label = data.composite_label[lang];
     const stable = isStableLabel(data.composite_label);
+    const shownText = view === 'technical' ? data.composite_narrative[lang] : data.composite_narrative_stakeholder[lang];
 
     gaugeSection.innerHTML = `
       <div class="gauge-top">
@@ -508,7 +513,11 @@
         <span>${escapeHtml(s.scaleLegend[1])}</span>
         <span>${escapeHtml(s.scaleLegend[2])}</span>
       </div>
-      <p class="gauge-meta">${escapeHtml(s.gaugeMeta)}</p>
+      <div class="narrative-toggle gauge-narrative-toggle" role="tablist">
+        <button type="button" data-gauge-view="technical" class="${view === 'technical' ? 'active' : ''}">${escapeHtml(s.toggleTechnical)}</button>
+        <button type="button" data-gauge-view="stakeholder" class="${view === 'stakeholder' ? 'active' : ''}">${escapeHtml(s.toggleInterpretation)}</button>
+      </div>
+      <p class="gauge-meta">${escapeHtml(shownText)}</p>
     `;
   }
 
@@ -554,7 +563,7 @@
   function renderAll(lang) {
     applyStaticStrings(lang);
     if (scorecardData) {
-      renderGauge(scorecardData, lang);
+      renderGauge(scorecardData, lang, gaugeView);
       renderDomains(scorecardData.domains, lang);
       renderUpdatedLine(scorecardData, lang);
     }
@@ -581,6 +590,13 @@
     if (cardView[domainKey] === btn.dataset.view) return;
     cardView[domainKey] = btn.dataset.view;
     renderDomains(scorecardData.domains, currentLang);
+  });
+
+  gaugeSection.addEventListener('click', function (e) {
+    const btn = e.target.closest('button[data-gauge-view]');
+    if (!btn || btn.classList.contains('active')) return;
+    gaugeView = btn.dataset.gaugeView;
+    renderGauge(scorecardData, currentLang, gaugeView);
   });
 
   applyStaticStrings(currentLang);

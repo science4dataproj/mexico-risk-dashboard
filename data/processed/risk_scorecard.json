@@ -1,10 +1,18 @@
 {
-  "generated_at": "2026-09-15T22:29:57.072195+00:00",
+  "generated_at": "2026-09-15T23:05:22.646472+00:00",
   "composite_score": 62.9,
   "composite_label": {
     "status_id": "monitor",
     "es": "Tendencia a monitorear",
     "en": "Trend to monitor"
+  },
+  "composite_narrative": {
+    "es": "El índice compuesto es 62.9, promedio no ponderado de 5 dominios. 4 de 5 dominios muestran una señal de fragilidad a vigilar o fuerte: Estabilidad externa, Liquidez, Tasas y política monetaria, Precios.",
+    "en": "The composite index is 62.9, an unweighted average across 5 domains. 4 of 5 domains show a monitor-level or strong fragility signal: External stability, Liquidity, Rates & monetary policy, Prices."
+  },
+  "composite_narrative_stakeholder": {
+    "es": "Varios de los indicadores que monitorea este panel muestran cierta inestabilidad reciente, aunque no de forma generalizada. Es un momento para seguir de cerca la evolución, no para sacar conclusiones todavía.",
+    "en": "Several of the indicators this panel tracks show some recent instability, though not broadly across the board. This is a moment to keep watching closely, not to draw conclusions yet."
   },
   "domains": [
     {
