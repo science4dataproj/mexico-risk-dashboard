@@ -122,7 +122,81 @@ of 1-2 years (source is IMF/World Bank WDI, not real-time). Acceptable
 here because public debt/GDP is a slow-moving stock variable, not a
 high-frequency signal — losing monthly granularity costs little
 information for this specific indicator.
+---
+---
 
+## 5. Reporting Layer — Domain Fragility Scorecard & Composite Index
+
+**Location:** `src/reporting/domains.py`, `composite_index.py`, `narrative.py`, `run_reporting.py`
+**Output:** `data/processed/risk_scorecard.json`
+
+### Domain taxonomy
+
+| Domain | Series | In composite? |
+|---|---|---|
+| External stability | fx_rate_fix, international_reserves | Yes |
+| Liquidity | m1, m2 | Yes |
+| Rates & monetary policy | cetes_28d, target_rate | Yes |
+| Real economy | quarterly_gdp, unemployment_rate | Yes |
+| Prices | cpi | Yes |
+| Fiscal solvency | debt_shrfsp_broad_pct_gdp | **No** — annual frequency provides no rolling-window trend statistics, and the fragility score is built exclusively from trend signals. Level context for debt is not currently surfaced in the scorecard at all (a known gap — see README Roadmap). |
+
+### Domain fragility score (0–100)
+
+Built **exclusively** from `ac1_trend_tau` and `variance_trend_tau` (and
+the combined `critical_slowing_down_flag`), each counted only when
+`flag_significant` is True — sign alone is never sufficient. This was
+the subject of a real bug found during manual QA: the narrative
+generator initially classified a trend as "consistent" based only on
+the sign of both taus, which meant a statistically insignificant tau as
+small as +0.017 was being treated identically to a strongly significant
++0.686. Fixed by requiring significance, not just sign, before
+describing any trend as consistent — both in the composite score (which
+was correct from the start) and in the narrative text (which was not,
+until this fix).
+
+The `critical_slowing_down_flag` counts double in the weighted score,
+reflecting that it's the stronger, combined signal (both autocorrelation
+and variance rising together), not just one trend statistic in
+isolation.
+
+**Score thresholds:**
+
+| Score | Label |
+|---|---|
+| 0–33 | Sin cambios relevantes |
+| 34–66 | Tendencia a monitorear |
+| 67–100 | Señal fuerte de fragilidad |
+
+### Composite index
+
+Unweighted average of the 5 eligible domain scores. Equal weighting is
+a deliberate, documented choice — no domain counts more just because it
+happens to track more series (e.g. "Prices" has 1 series, "Liquidity"
+has 2, but each contributes equally to the composite).
+
+### Why the score is trend-only, never level-based
+
+A domain score built from raw levels (z-scores, percentiles) would
+require deciding, for every single indicator, whether a high or low
+level represents *more* or *less* risk — and that judgment is often
+genuinely ambiguous (is historically low unemployment reassuring, or a
+sign of an overheating labor market that could itself be a leading risk
+indicator?). Building the score exclusively from trend/stability signals
+sidesteps this: "is this series becoming less stable over time" has an
+unambiguous interpretation (higher = more fragile) regardless of the
+domain or the direction economists would normally read into the level.
+Level context is preserved and shown, but only in the narrative text,
+where it can carry the necessary nuance in plain language rather than
+being silently folded into a number.
+
+### Narrative generation
+
+Template-based, not free text — the same input statistics always
+produce the same sentence, which keeps the output testable
+(`tests/test_narrative.py` validates both grammar correctness and
+substantive correctness against real, previously-verified production
+data, not only synthetic fixtures).
 ---
 
 ## Decisions Log
@@ -256,6 +330,33 @@ independent of any single series.
    externally-measured magnitude (oil prices, global risk indices)
    during the same period." This reframing is documented as a future
    research direction in the README, not yet implemented.
+
+12. **Domain fragility scores and narrative text require statistical
+    significance, never sign alone, before describing a trend.** A bug
+    was found where narrative.py classified trends as "consistent"
+    based only on whether both `ac1_trend_tau` and `variance_trend_tau`
+    were positive/negative, ignoring `flag_significant` entirely — a
+    tau of +0.017 (noise) was described identically to a tau of +0.686
+    (strong, highly significant). composite_index.py already applied
+    this correctly; narrative.py did not, until fixed. Both modules now
+    consistently require significance, not just sign.
+
+13. **The composite fragility index and domain scores are built
+    exclusively from trend/stability statistics (rolling autocorrelation
+    and variance trends), never from level statistics (z-scores,
+    percentiles).** This avoids having to encode, inside a single
+    number, a domain-specific and often ambiguous judgment about
+    whether a high or low level represents more or less risk. Level
+    context is preserved only in the plain-language narrative text,
+    where it can be explained with appropriate nuance.
+
+14. **The public dashboard (GitHub Pages) requires no separate build or
+    deploy step.** It's a single static `index.html` at the repo root
+    that fetches `data/processed/risk_scorecard.json` directly at
+    page-load time. Because the monthly automated pipeline already
+    commits updated data to `main`, the live site reflects new data
+    automatically on the next page load — publishing and data-freshness
+    are the same event, by design.
 
 ---
 
