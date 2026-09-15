@@ -180,3 +180,36 @@ def generate_domain_narrative_bilingual(
         lang: generate_domain_narrative(results_df, domain_key, window_type, lang)
         for lang in SUPPORTED_LANGUAGES
     }
+
+
+def generate_composite_technical_summary(domain_scores: list, composite_score: float) -> dict[str, str]:
+    """
+    Builds a technical, template-generated summary of the composite
+    index: how many (and which) domains currently show a "monitor" or
+    "fragile" status, out of the total evaluated. This is the composite
+    index's equivalent of a per-series narrative — deterministic, built
+    from the same domain_scores the JSON already contains, not a new
+    calculation.
+    """
+    flagged = [d for d in domain_scores if d.label.status_id != "stable"]
+    n_total = len(domain_scores)
+    n_flagged = len(flagged)
+
+    names_es = ", ".join(d.display_name["es"] for d in flagged)
+    names_en = ", ".join(d.display_name["en"] for d in flagged)
+
+    if n_flagged == 0:
+        return {
+            "es": f"El índice compuesto es {composite_score:.1f}, promedio no ponderado de {n_total} dominios. Ninguno de los {n_total} dominios evaluados muestra actualmente una señal de fragilidad a vigilar o fuerte.",
+            "en": f"The composite index is {composite_score:.1f}, an unweighted average across {n_total} domains. None of the {n_total} evaluated domains currently show a monitor-level or strong fragility signal.",
+        }
+
+    verb_es = "muestra" if n_flagged == 1 else "muestran"
+    dominio_es = "dominio" if n_flagged == 1 else "dominios"
+    verb_en = "shows" if n_flagged == 1 else "show"
+    domain_en = "domain" if n_flagged == 1 else "domains"
+
+    return {
+        "es": f"El índice compuesto es {composite_score:.1f}, promedio no ponderado de {n_total} dominios. {n_flagged} de {n_total} {dominio_es} {verb_es} una señal de fragilidad a vigilar o fuerte: {names_es}.",
+        "en": f"The composite index is {composite_score:.1f}, an unweighted average across {n_total} domains. {n_flagged} of {n_total} {domain_en} {verb_en} a monitor-level or strong fragility signal: {names_en}.",
+    }

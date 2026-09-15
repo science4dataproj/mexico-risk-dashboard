@@ -35,3 +35,12 @@ def test_get_stakeholder_explanation_returns_text():
 def test_get_stakeholder_explanation_raises_on_unknown_combination():
     with pytest.raises(KeyError):
         get_stakeholder_explanation("liquidity", "not_a_real_status", "es")
+
+from src.reporting.stakeholder_text import get_composite_stakeholder_explanation
+
+
+def test_composite_stakeholder_explanation_exists_for_all_statuses_and_languages():
+    for status_id in ("stable", "monitor", "fragile"):
+        for lang in ("es", "en"):
+            text = get_composite_stakeholder_explanation(status_id, lang)
+            assert isinstance(text, str) and len(text) > 20
