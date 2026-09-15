@@ -325,6 +325,12 @@
   const domainGrid = document.getElementById('domain-grid');
   const updatedLine = document.getElementById('updated-line');
 
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+  }
+
   function isStableLabel(label) {
     return label === 'Sin cambios relevantes';
   }
@@ -336,9 +342,9 @@
     gaugeSection.innerHTML = `
       <div class="gauge-top">
         <span class="gauge-number">${data.composite_score.toFixed(1)}</span>
-        <span class="gauge-label ${stable ? 'stable' : ''}">${data.composite_label}</span>
+        <span class="gauge-label ${stable ? 'stable' : ''}">${escapeHtml(data.composite_label)}</span>
       </div>
-      <div class="scale-track" role="img" aria-label="Índice compuesto: ${data.composite_score.toFixed(1)} de 100, ${data.composite_label}">
+      <div class="scale-track" role="img" aria-label="Índice compuesto: ${data.composite_score.toFixed(1)} de 100, ${escapeHtml(data.composite_label)}">
         <div class="scale-marker" style="left:${pct}%"></div>
       </div>
       <div class="scale-legend">
@@ -359,14 +365,14 @@
       return `
         <article class="domain-card${wideClass}">
           <div class="domain-head">
-            <span class="domain-name">${d.display_name}</span>
+            <span class="domain-name">${escapeHtml(d.display_name)}</span>
             <span class="domain-score">${d.score.toFixed(1)}</span>
           </div>
           <div class="domain-bar-track">
             <div class="domain-bar-fill ${stable ? 'stable' : ''}" style="width:${Math.max(0, Math.min(100, d.score))}%"></div>
           </div>
-          <p class="domain-status ${stable ? 'stable' : ''}">${d.label}</p>
-          <p class="domain-narrative">${d.narrative}</p>
+          <p class="domain-status ${stable ? 'stable' : ''}">${escapeHtml(d.label)}</p>
+          <p class="domain-narrative">${escapeHtml(d.narrative)}</p>
         </article>
       `;
     }).join('');
