@@ -57,9 +57,27 @@ def test_since_break_window_falls_back_when_no_break_found():
     assert "fallback" in result.label
 
 
-def test_get_all_windows_returns_three_windows():
+def test_get_all_windows_returns_two_production_windows():
+    """
+    Production pipeline uses only full_history and rolling_10y.
+    since_last_break was retired — see windows.py docstring and
+    SERIES_METADATA.md Decisions Log #11.
+    """
     series = _make_series_with_break("2012-12-01")
     windows = get_all_windows(series)
-    assert len(windows) == 3
+    assert len(windows) == 2
     window_types = {w.window_type for w in windows}
-    assert window_types == {"full_history", "rolling_10y", "since_last_break"}
+    assert window_types == {"full_history", "rolling_10y"}
+
+
+def test_since_break_window_still_available_for_research_use():
+    """
+    get_since_break_window() is retained for research/reference use,
+    even though it's no longer called by get_all_windows(). This test
+    confirms it still works correctly on its own — the function isn't
+    broken, it was just misapplied in production.
+    """
+    series = _make_series_with_break("2018-12-01")
+    result = get_since_break_window(series)
+    assert not result.used_fallback
+    assert result.start_date == pd.Timestamp("2018-12-01")

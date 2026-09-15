@@ -12,6 +12,39 @@ series, which src/analysis/windows.py uses to build the "since last
 break" rolling window.
 """
 
+"""
+src/analysis/structural_breaks.py
+
+*** RESEARCH / REFERENCE MODULE — NOT USED IN THE PRODUCTION PIPELINE ***
+*** as of 2026-09-14. See SERIES_METADATA.md, Decisions Log #11.       ***
+
+This module implements a Chow test for structural breaks at sexenio
+(Mexican presidential term) boundaries. The Chow test math itself is
+correct and the functions below are unit-tested and working as
+designed — the problem is NOT a bug in this code, but a misapplication:
+testing a short recent segment (e.g. ~2 years since the most recent
+sexenio started) against a single linear trend fit to 20-35 years of
+non-linear macroeconomic history produces spuriously "significant"
+results for almost any recent candidate date, not just genuine regime
+changes. A placebo-style validation (comparing the real boundary's
+F-statistic against F-statistics from arbitrary control dates) exposed
+this: several series' real sexenio boundary ranked WORSE than most
+random dates.
+
+Kept in the codebase because:
+  1. The underlying Chow test implementation is correct and may be
+     reused correctly in the future (e.g. applied to externally-dated,
+     independently-validated shock events, rather than searching for
+     breaks within the same series being evaluated for fragility).
+  2. It documents a real methodological finding worth preserving,
+     not hiding.
+
+Tests whether sexenio boundaries correspond to genuine structural
+breaks in each time series, using the Chow test. Boundaries are NEVER
+assumed to be breaks by default (see SERIES_METADATA.md, Decisions Log
+#2) — each is tested statistically, per series, independently.
+"""
+
 import numpy as np
 import pandas as pd
 import statsmodels.api as sm

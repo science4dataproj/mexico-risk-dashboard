@@ -92,9 +92,32 @@ def get_since_break_window(series: pd.Series, alpha: float = 0.05) -> WindowResu
 
 
 def get_all_windows(series: pd.Series, alpha: float = 0.05) -> list[WindowResult]:
-    """Convenience function: returns all three windows for a series."""
+    """
+    Convenience function: returns the reference windows used in the
+    PRODUCTION pipeline.
+
+    IMPORTANT: as of 2026-09-14, this returns only full_history and
+    rolling_10y — NOT since_last_break. The since_last_break window
+    (and the Chow-test-based structural break detection behind it) was
+    retired from the production pipeline after discovering that the
+    underlying Chow test is misspecified for these series: fitting a
+    single straight line to 20-35 years of non-linear macro history,
+    then testing a short recent segment against it, causes almost ANY
+    recent cutoff date to appear "significant" — not just genuine
+    regime changes. A placebo test (comparing the real boundary's
+    F-statistic against F-statistics from arbitrary control dates)
+    confirmed this: for several series, the actual sexenio boundary's
+    F-statistic ranked in the bottom 10-20% of a sample of random
+    dates, meaning it was LESS distinguishable than a typical
+    arbitrary cutoff, not more. Full details, including the numbers
+    from this diagnostic, are in SERIES_METADATA.md, Decisions Log #11.
+
+    get_since_break_window() and the Chow test machinery in
+    structural_breaks.py are kept in the codebase for reference and
+    future research (see README, "Research directions"), but are no
+    longer wired into the production analysis pipeline.
+    """
     return [
         get_full_history_window(series),
         get_rolling_window(series),
-        get_since_break_window(series, alpha=alpha),
     ]
