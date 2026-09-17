@@ -104,6 +104,67 @@
     margin: 0;
   }
 
+  .motivation-box {
+    border-left: 3px solid var(--accent);
+    background: var(--paper-raised);
+    padding: 20px 24px;
+    margin: 32px 0 0;
+    max-width: 68ch;
+  }
+
+  .correction-note {
+    border: 1px solid var(--stable);
+    background: var(--stable-soft);
+    padding: 18px 24px;
+    margin: 32px 0 0;
+    max-width: 68ch;
+    border-radius: 3px;
+  }
+
+  .correction-heading {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--stable);
+    margin: 0 0 8px;
+  }
+
+  .correction-text {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin: 0 0 10px;
+  }
+
+  .correction-link {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    margin: 0;
+  }
+
+  .motivation-heading {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    margin: 0 0 8px;
+  }
+
+  .motivation-text {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin: 0 0 12px;
+  }
+
+  .literature-link {
+    font-family: var(--sans);
+    font-size: 12.5px;
+    margin: 4px 0 0;
+  }
+
   /* ---- Gauge ---- */
 
   main { padding-top: 48px; }
@@ -369,6 +430,20 @@
     <p class="lede" id="lede-text"></p>
   </header>
 
+  <div class="correction-note">
+    <p class="correction-heading" id="correction-heading"></p>
+    <p class="correction-text" id="correction-text"></p>
+    <p class="correction-link"><a href="https://github.com/science4dataproj/mexico-risk-dashboard/blob/main/data/SERIES_METADATA.md" target="_blank" rel="noopener" id="correction-link-text"></a></p>
+  </div>
+
+  <div class="motivation-box">
+    <p class="motivation-heading" id="motivation-heading"></p>
+    <p class="motivation-text" id="motivation-text-1"></p>
+    <p class="motivation-text" id="motivation-text-2"></p>
+    <p class="motivation-text" id="motivation-text-3"></p>
+    <p class="literature-link"><a href="https://github.com/science4dataproj/mexico-risk-dashboard/blob/main/data/METHODOLOGY.md" target="_blank" rel="noopener" id="literature-link-text"></a></p>
+  </div>
+
   <main>
     <h2 class="section-heading" id="gauge-heading"></h2>
     <p class="section-sub" id="gauge-heading-sub"></p>
@@ -405,6 +480,14 @@
       kicker: "Monitoreo estadístico de la economía mexicana, con actualización automática mensual.",
       h1: "Panel de riesgo económico de México",
       lede: "Un índice de fragilidad económica construido con series oficiales de Banxico, INEGI y SHCP. No evalúa si la economía va bien o mal — mide si su comportamiento se está volviendo más inestable con el tiempo.",
+      correctionHeading: "Corrección metodológica (16 de septiembre de 2026)",
+      correctionText: "Se identificó y corrigió un error real en el cálculo de significancia estadística de las señales de fragilidad. Toda prueba de hipótesis bien calibrada, al aplicarse a datos sin ninguna tendencia real, debe marcar \"significativo\" solo ~5% de las veces por puro azar — una garantía matemática del método, no una suposición sobre la economía. Al auditar el método anterior con datos construidos para no tener tendencia real, marcaba \"significativo\" hasta 98% de las veces: evidencia de que la fórmula, no la economía mexicana, estaba mal calibrada. Con el método corregido (subrogadas ARMA, siguiendo la metodología de referencia del campo), el índice compuesto pasó de 62.9 (\"Tendencia a monitorear\") a 12.7 (\"Sin cambios relevantes\"). El detalle técnico completo está documentado abajo.",
+      correctionLinkText: "Ver el registro completo de la corrección",
+      motivationHeading: "¿Por qué existe este panel?",
+      motivationText1: "En el debate público mexicano coexisten narrativas opuestas sobre el rumbo económico del país, cada una con evidencia real detrás. Este proyecto no busca arbitrar cuál es correcta —eso excede lo que un análisis estadístico puede resolver—, sino tratar a la economía como lo que es: un sistema complejo, donde el comportamiento agregado de millones de decisiones individuales genera patrones que ninguna narrativa única captura bien. Ese es el paradigma que se usa aquí para acercarse a la pregunta de fondo: ¿hay señales estadísticas de fragilidad creciente, más allá de lo que cualquiera de las dos posturas asume de antemano?",
+      motivationText2: "La herramienta central es la \"desaceleración crítica\" (critical slowing down): el patrón, documentado analíticamente desde Wissel (1984) y sintetizado por Scheffer et al. (2009, Nature) —quienes ya señalaban su aplicabilidad a mercados financieros—, por el cual un sistema que pierde resiliencia antes de un cambio de régimen muestra autocorrelación y varianza crecientes. Estudios posteriores lo han aplicado directamente a crisis financieras (Diks et al., 2019) con resultados mixtos, un patrón que este proyecto toma en serio: la clave probablemente está en no aplicar el método de forma genérica, sino con definiciones precisas de qué cuenta como crisis y qué variables son mecánicamente relevantes para cada tipo.",
+      motivationText3: "Por eso este trabajo adopta la tipología cuantitativa de crisis de Reinhart y Rogoff (2009) y Calvo (1998). Sus nueve indicadores se organizan en cinco dominios —estabilidad externa, liquidez, tasas, economía real y precios— elegidos, en un primer momento, por la disponibilidad de series oficiales confiables. Una auditoría posterior contra la literatura de alerta temprana (Kaminsky, Lizondo y Reinhart, 1998; Schularick y Taylor, 2012) encontró una alineación parcial, no completa: variables con buen respaldo histórico —como la razón M2/reservas o el crecimiento del crédito— todavía no forman parte del sistema, un hueco documentado como trabajo futuro. Para cada serie se prueba si su autocorrelación y varianza muestran una tendencia estadísticamente significativa —validada contra datos sintéticos, siguiendo a Dakos et al. (2012)—, y el resultado se resume en un índice de 0 a 100 por dominio y uno compuesto general. El objetivo no es predecir una crisis, sino señalar, con rigor estadístico, cuándo algo se aparta de su comportamiento histórico normal.",
+      literatureLinkText: "Ver la metodología completa, con referencias y discusión a fondo",
       loading: "Cargando el panel más reciente…",
       gaugeHeading: "Índice compuesto de fragilidad",
       gaugeHeadingSub: "Resume, en un solo número de 0 a 100, qué tan inestables se están comportando en conjunto los cinco dominios que monitorea este panel — entre más alto, más señales de fragilidad creciente hay actualmente.",
@@ -429,6 +512,14 @@
       kicker: "Statistical monitoring of the Mexican economy, with automatic monthly updates.",
       h1: "Mexico Economic Risk Dashboard",
       lede: "An economic fragility index built from official Banxico, INEGI, and SHCP series. It doesn't assess whether the economy is doing well or poorly — it measures whether its behavior is becoming more unstable over time.",
+      correctionHeading: "Methodological correction (September 16, 2026)",
+      correctionText: "A real bug was found and fixed in how statistical significance was calculated for fragility signals. Any well-calibrated hypothesis test, applied to data with no genuine trend, should flag \"significant\" only ~5% of the time by pure chance — a mathematical guarantee of the method itself, not an assumption about the economy. Auditing the previous method with data specifically constructed to have no genuine trend, it flagged \"significant\" up to 98% of the time: evidence that the formula, not the Mexican economy, was miscalibrated. With the corrected method (ARMA surrogates, following the field's reference methodology), the composite index dropped from 62.9 (\"Trend to monitor\") to 12.7 (\"No notable change\"). Full technical detail is documented below.",
+      correctionLinkText: "See the full correction record",
+      motivationHeading: "Why this panel exists",
+      motivationText1: "Mexican public debate holds two opposing narratives about the country's economic direction, each backed by real evidence. This project doesn't try to arbitrate which is correct — that's beyond what a statistical analysis can resolve — but instead treats the economy for what it is: a complex system, where the aggregate behavior of millions of individual decisions produces patterns no single narrative captures well. That's the paradigm used here to approach the underlying question: are there statistical signs of growing fragility, beyond what either side assumes in advance?",
+      motivationText2: "The core tool is \"critical slowing down\": the pattern, analytically documented since Wissel (1984) and synthesized by Scheffer et al. (2009, Nature) — who already noted its applicability to financial markets — by which a system losing resilience before a regime shift shows rising autocorrelation and variance. Later studies applied it directly to financial crises (Diks et al., 2019) with mixed results, a pattern this project takes seriously: the key is likely not applying the method generically, but with precise definitions of what counts as a crisis and which variables are mechanistically relevant to each type.",
+      motivationText3: "That's why this work adopts the quantitative crisis typology from Reinhart and Rogoff (2009) and Calvo (1998). Its nine indicators are organized into five domains — external stability, liquidity, rates, real economy, and prices — chosen, initially, based on the availability of reliable official series. A subsequent audit against the early-warning literature (Kaminsky, Lizondo & Reinhart, 1998; Schularick & Taylor, 2012) found partial, not complete, alignment: variables with strong historical backing — such as the M2/reserves ratio or credit growth — are not yet part of the system, a gap documented as future work. Each series is tested for whether its autocorrelation and variance show a statistically significant trend — validated against synthetic data, following Dakos et al. (2012) — and the result is summarized in a 0–100 index per domain and one composite overall. The goal isn't to predict a crisis, but to flag, with statistical rigor, when something departs from its normal historical behavior.",
+      literatureLinkText: "See the full methodology, with references and in-depth discussion",
       loading: "Loading the latest panel…",
       gaugeHeading: "Composite fragility index",
       gaugeHeadingSub: "Summarizes, in a single number from 0 to 100, how unstable the five domains this panel tracks are behaving as a whole — the higher the number, the more signs of growing fragility right now.",
@@ -477,6 +568,14 @@
     document.getElementById('kicker-text').textContent = s.kicker;
     document.getElementById('h1-text').textContent = s.h1;
     document.getElementById('lede-text').textContent = s.lede;
+    document.getElementById('correction-heading').textContent = s.correctionHeading;
+    document.getElementById('correction-text').textContent = s.correctionText;
+    document.getElementById('correction-link-text').textContent = s.correctionLinkText;
+    document.getElementById('motivation-heading').textContent = s.motivationHeading;
+    document.getElementById('motivation-text-1').textContent = s.motivationText1;
+    document.getElementById('motivation-text-2').textContent = s.motivationText2;
+    document.getElementById('motivation-text-3').textContent = s.motivationText3;
+    document.getElementById('literature-link-text').textContent = s.literatureLinkText;
     document.getElementById('domains-heading').textContent = s.domainsHeading;
     document.getElementById('gauge-heading').textContent = s.gaugeHeading;
     document.getElementById('gauge-heading-sub').textContent = s.gaugeHeadingSub;
