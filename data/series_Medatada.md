@@ -357,7 +357,201 @@ independent of any single series.
     commits updated data to `main`, the live site reflects new data
     automatically on the next page load — publishing and data-freshness
     are the same event, by design.
+15. **The dashboard and reporting layer support Spanish and English
+   through a single source of truth per phrase, not two parallel
+   systems.** Motivation: the project's audience includes international/
+   remote-hiring recruiters (see README), who need to read the same
+   content a Spanish-speaking user sees, not a separate, potentially
+   inconsistent translation.
 
+   **Design principle:** every user-facing string is computed once, in
+   the same function call, from the same underlying numbers — never
+   translated after the fact by a second, independent code path. In
+   `src/reporting/domains.py` and `composite_index.py`, this means
+   `display_name`, `description`, and score-band labels are stored as
+   `{"es": ..., "en": ...}` dicts directly in the data structures
+   (`DomainInfo`, `ScoreLabel`), rather than as separate `_en.py` files
+   that could silently drift out of sync as the project grows. In
+   `src/reporting/narrative.py`, a single `PHRASES` dict (keyed by
+   language) supplies the building blocks for both languages'
+   sentences, generated from the same statistics in the same call
+   (`generate_series_narrative(..., lang="es")` and `lang="en"` always
+   read the same `ac1_tau`/`var_tau`/`percentile` values — they can
+   differ only in wording, never in substance).
+
+   **Known language-specific details handled explicitly, not
+   generically:** grammatical number can differ by language for the
+   same series (e.g. CETES is phrased as a plural subject in Spanish —
+   "los CETES... están" — but as a singular noun phrase in natural
+   English — "the 28-day CETES rate is"), so `SERIES_DISPLAY_NAMES`
+   stores `(name, is_plural)` per language, not a single shared flag.
+   English percentile phrasing needs correct ordinal suffixes (the
+   `_ordinal_en()` helper: "21st", "4th", with the 11–13 exception) —
+   Spanish percentile phrasing doesn't need this at all, since
+   "percentil 21" needs no suffix; treating this as a shared/generic
+   formatting rule would have produced "the 21th percentile," a
+   visible error to a native reader.
+
+   **JSON output schema:** `risk_scorecard.json` carries `display_name`,
+   `label`, `narrative`, and (once added, see #17) `narrative_stakeholder`
+   as `{"es": ..., "en": ...}` objects (labels additionally carry a
+   language-independent `status_id` — see #17 for why). The frontend
+   (`index.html`) selects which key to render via a language toggle
+   button, re-rendering from the same already-fetched JSON — no second
+   network request, no separate English page to keep in sync.
+
+   **Regression coverage:** `tests/test_domains.py` and
+   `tests/test_composite_index.py` include tests that fail if a new
+   domain, score band, or phrase is added with only one language
+   filled in (`test_every_domain_has_both_languages`,
+   `test_every_score_label_has_both_languages`), specifically to catch
+   the kind of silent drift this single-source design is meant to
+   prevent.
+
+16. **Kendall's theoretical p-value, used throughout production for
+   trend significance (`ac1_trend_tau`, `variance_trend_tau`,
+   `critical_slowing_down_flag`), was found to have a massively
+   inflated false-positive rate and was replaced with ARMA-surrogate
+   significance testing.**
+
+   **Diagnosis:** an audit generating ~150 random reference dates per
+   series/window and computing Kendall's theoretical p-value at each
+   found that "statistically significant" (p < 0.05) results occurred
+   far more often than the nominal 5% false-positive rate the test
+   claims — ranging from 40% (`m1`, rolling_10y) to **98%**
+   (`target_rate`, full_history), across every series and window
+   tested. Root cause: `ac1_trend_tau`/`variance_trend_tau` test for a
+   trend in a *derived, already-smoothed* rolling statistic (rolling
+   autocorrelation/variance), not in raw data. Adjacent points of a
+   rolling-window statistic mechanically share most of their
+   underlying data, violating the independence assumption behind
+   Kendall's asymptotic p-value — a problem long documented in the
+   hydrology trend-detection literature:
+
+   > Yue, S., Pilon, P., Phinney, B., & Cavadias, G. (2002). The
+   > influence of autocorrelation on the ability to detect trend in
+   > hydrological series. *Hydrological Processes*, 16(9), 1807-1829.
+
+   An initial attempt to fix this with an empirical placebo test
+   (comparing the real trend statistic against statistics computed at
+   real historical control dates — the same technique already used to
+   retire `since_last_break`, see #11) also failed: real historical
+   dates aren't a valid null distribution, because real economic
+   history has its own genuine dynamics (past volatility episodes,
+   cycles) and isn't noise. This was confirmed by generating 500
+   control dates for `fx_rate_fix`: 57.7% of them showed
+   `|tau| > 0.9`, showing near-perfect monotonic trends are *common*,
+   not rare, in this series' history — control dates showed the same
+   inflation as crisis dates.
+
+   **Fix:** adopted the field's own reference methodology instead of
+   further ad hoc correction:
+
+   > Dakos, V., Carpenter, S. R., Brock, W. A., Ellison, A. M.,
+   > Guttal, V., Ives, A. R., Kéfi, S., Livina, V., Seekell, D. A.,
+   > van Nes, E. H., & Scheffer, M. (2012). Methods for Detecting
+   > Early Warnings of Critical Transitions in Time Series Illustrated
+   > Using Simulated Ecological Data. *PLOS ONE*, 7(7), e41010.
+
+   Implemented in `src/analysis/surrogates.py`: detrend the raw series
+   (Gaussian kernel smoother), fit a fixed-order ARMA(1,1) model to the
+   residuals, generate 200 synthetic surrogate series sharing the same
+   short-term correlation structure but with no systematic trend by
+   construction, run the identical rolling-stat + Kendall's tau
+   pipeline on each surrogate, and derive an empirical p-value via the
+   Phipson & Smyth (2010) correction (`p = (b+1)/(m+1)`, avoiding the
+   impossible p=0 result a naive percentile calculation would give):
+
+   > Phipson, B., & Smyth, G. K. (2010). Permutation P-values Should
+   > Never Be Zero: Calculating Exact P-values When Permutations Are
+   > Randomly Drawn. *Statistical Applications in Genetics and
+   > Molecular Biology*, 9(1), Article 39.
+
+   `n_surrogates=200` (not Dakos et al.'s 1,000) is a documented
+   cost/benefit tradeoff — the minimum possible p-value with 200
+   surrogates (~0.005) remains comfortably below the 0.05 threshold
+   after FDR correction, and 1,000 surrogates × 9 series × 2 windows ×
+   2 stats was judged too slow for routine monthly-cron execution.
+
+   **Measured impact:** re-running the full pipeline with the
+   corrected method dropped the composite fragility index from
+   **62.9 ("Tendencia a monitorear") to 12.7 ("Sin cambios
+   relevantes")**, and the count of statistically significant flags in
+   `analysis_results.csv` from 66 to 26 — with the reduction
+   concentrated specifically in `ac1_trend_tau`/`variance_trend_tau`/
+   `critical_slowing_down_flag` rows, not in the unrelated descriptive
+   statistics (z-score, skewness, etc.), confirming the fix targeted
+   the actual broken component. The version of the public dashboard
+   showing 62.9 was live and incorrect; this is documented rather than
+   quietly corrected, consistent with this project's ongoing practice
+   of disclosing its own errors (see #11).
+
+17. **`is_csd_active()` (`src/reporting/composite_index.py`) is now the
+   single source of truth for whether the combined critical-slowing-
+   down signal is active — decided only from the post-FDR-correction
+   significance of the two individual trend stats, never from
+   `critical_slowing_down_flag`'s own `value` column.** That column is
+   computed in `early_warning.py` *before* the batch-wide FDR
+   correction exists (which only runs later, in `run_analysis.py`), so
+   it could disagree with the corrected result. Found in production
+   2026-09-16: `cetes_28d`/`full_history` had `critical_slowing_down_flag
+   = 1.0` (pre-correction), while neither individual stat survived FDR
+   — the domain score was counting a signal the corrected statistics
+   didn't actually support, and the narrative correctly said "no
+   significant trend" while the score silently counted it anyway. Same
+   root-cause pattern as #12 (deciding significance from an
+   uncorrected source instead of the batch-corrected one), recurring
+   one layer deeper in the pipeline than where it was first fixed.
+
+18. **`generate_series_narrative()` now selects between `rolling_10y`
+   and `full_history` per series, instead of always describing
+   `rolling_10y`.** The domain fragility score (`compute_domain_
+   fragility_score()`) has always considered both windows, but the
+   narrative text only ever described one — for a series where a
+   signal exists only in `full_history` (found in production for `m1`:
+   full_history showed a significant combined CSD flag, rolling_10y
+   did not), the score and the narrative silently told different
+   stories. Fix: if `rolling_10y` shows no CSD signal but
+   `full_history` does, the narrative switches to `full_history` and
+   says so explicitly ("esta señal aparece al ver la historia
+   completa, no en la última década por sí sola"), keeping the score
+   and its explanation consistent.
+
+19. **Backtest against known historical crises (2008-09, 2014-16 oil,
+   1994 Tequila), using the corrected surrogate method, found NO
+   statistically significant combined CSD signal in any of the three
+   episodes, in any of the available series, after Benjamini-Hochberg
+   correction.** Some individual indicators came close in isolation
+   (e.g. `fx_rate_fix` ac1 in 2008: p=0.05 before correction; `fx_rate_fix`
+   in 1994: tau≈1.0 but p=0.09), but none cleared both the individual
+   significance bar and the paired (AC1 + variance) requirement.
+
+   This null result is consistent with, not contradicted by, the
+   existing literature on CSD applied to financial crises — Diks et
+   al. (2019) found evidence of critical slowing down before Black
+   Monday (1987) but mixed/non-significant results for the Asian
+   crisis (1997), the dot-com crash (2000), and the 2008 crisis. Two
+   design bugs were found and fixed during this backtest before
+   reaching this result, both now covered by regression tests
+   (`tests/test_backtest.py`): (a) an early version tested for a trend
+   across the *entire* available pre-crisis history (e.g. 17 years for
+   `fx_rate_fix` in 2008) instead of a recent lookback window,
+   answering "was there ever a trend" rather than "was there a recent
+   destabilization" — fixed by trimming to `window +
+   BACKTEST_LOOKBACK_TARGET_POINTS` (24) raw points before the crisis
+   date; (b) Benjamini-Hochberg correction across the full batch of
+   backtest p-values was accidentally omitted when `backtest.py` was
+   simplified to call `surrogate_trend_test()` directly — added back
+   via `add_significance()`.
+
+   **Implication:** per the project's own decision criterion (if the
+   agnostic CSD approach shows real detection capability, keep
+   refining it; if not, prioritize the crisis-type-specific "dirigido"
+   system — see the domain-literature-mapping discussion), this null
+   result across all three testable episodes is evidence to prioritize
+   building the directed, crisis-type-specific detection layer (the 7
+   crisis-type groups with dedicated literature-backed variables) over
+   further investment in the agnostic layer's current design.
 ---
 
 ## Appendix: Confirmed Data Ranges (as of first successful pull, 2026-09-12)
