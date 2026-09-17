@@ -82,6 +82,29 @@ def _is_active_trend_signal(row: pd.Series) -> bool:
 def _is_active_csd_flag(row: pd.Series) -> bool:
     return row["stat_name"] == "critical_slowing_down_flag" and row["value"] == 1.0
 
+def is_csd_active(results_df: pd.DataFrame, series_key: str, window_type: str) -> bool:
+    """
+    Single source of truth for 'is the combined CSD signal really
+    active', decided ONLY from the post-FDR-correction significance of
+    the two individual stats — never from critical_slowing_down_flag's
+    own 'value' column, which is computed before correction exists and
+    can disagree with the corrected result (found in production
+    2026-09-16 for cetes_28d: value=1 pre-correction, but neither
+    individual stat survived FDR — see SERIES_METADATA.md Decisions Log).
+    """
+    subset = results_df[
+        (results_df["series_key"] == series_key)
+        & (results_df["window_type"] == window_type)
+        & (results_df["stat_name"].isin(["ac1_trend_tau", "variance_trend_tau"]))
+    ]
+    ac1_row = subset[subset["stat_name"] == "ac1_trend_tau"]
+    var_row = subset[subset["stat_name"] == "variance_trend_tau"]
+    if ac1_row.empty or var_row.empty:
+        return False
+
+    ac1_active = bool(ac1_row["flag_significant"].iloc[0]) and ac1_row["value"].iloc[0] > 0
+    var_active = bool(var_row["flag_significant"].iloc[0]) and var_row["value"].iloc[0] > 0
+    return ac1_active and var_active
 
 def compute_domain_fragility_score(results_df: pd.DataFrame, domain_key: str) -> DomainScore:
     domain_series = [k for k, v in DOMAIN_MAP.items() if v == domain_key]
@@ -93,34 +116,37 @@ def compute_domain_fragility_score(results_df: pd.DataFrame, domain_key: str) ->
     ]
 
     trend_rows = subset[subset["stat_name"].isin(TREND_STATS)]
-    csd_rows = subset[subset["stat_name"] == "critical_slowing_down_flag"]
 
-    n_possible = len(trend_rows) + len(csd_rows)
+    # Enumerar combinaciones serie×ventana posibles para saber cuántas
+    # banderas CSD son evaluables, sin depender de la columna 'value'
+    # ya calculada de forma incorrecta en early_warning.py.
+    series_window_pairs = subset[["series_key", "window_type"]].drop_duplicates()
+    n_csd_possible = len(series_window_pairs)
+    n_csd_active = sum(
+        is_csd_active(results_df, row.series_key, row.window_type)
+        for row in series_window_pairs.itertuples()
+    )
+
+    n_possible = len(trend_rows) + n_csd_possible
     if n_possible == 0:
         return DomainScore(
-            domain_key=domain_key,
-            display_name=domain_info.display_name,
-            score=0.0,
-            label=label_for_score(0.0),
-            n_signals_active=0,
-            n_signals_possible=0,
+            domain_key=domain_key, display_name=domain_info.display_name,
+            score=0.0, label=label_for_score(0.0),
+            n_signals_active=0, n_signals_possible=0,
         )
 
     n_active_trend = trend_rows.apply(_is_active_trend_signal, axis=1).sum()
-    n_active_csd = csd_rows.apply(_is_active_csd_flag, axis=1).sum()
 
-    weighted_active = n_active_trend + (2 * n_active_csd)
-    weighted_possible = len(trend_rows) + (2 * len(csd_rows))
+    weighted_active = n_active_trend + (2 * n_csd_active)
+    weighted_possible = len(trend_rows) + (2 * n_csd_possible)
 
     score = 100 * weighted_active / weighted_possible if weighted_possible else 0.0
 
     return DomainScore(
-        domain_key=domain_key,
-        display_name=domain_info.display_name,
-        score=round(score, 1),
-        label=label_for_score(score),
-        n_signals_active=int(n_active_trend + n_active_csd),
-        n_signals_possible=len(trend_rows) + len(csd_rows),
+        domain_key=domain_key, display_name=domain_info.display_name,
+        score=round(score, 1), label=label_for_score(score),
+        n_signals_active=int(n_active_trend + n_csd_active),
+        n_signals_possible=len(trend_rows) + n_csd_possible,
     )
 
 

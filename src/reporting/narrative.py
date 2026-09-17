@@ -124,6 +124,11 @@ def _trend_phrase(ac1_tau, ac1_sig, var_tau, var_sig, lang: str) -> str:
         return p["trend_mixed"]
     return p["trend_none"]
 
+from src.reporting.composite_index import is_csd_active  # nuevo import al inicio del archivo
+
+def _get_csd_flag(results_df: pd.DataFrame, series_key: str, window_type: str) -> bool:
+    return is_csd_active(results_df, series_key, window_type)
+
 
 def generate_series_narrative(
     results_df: pd.DataFrame,
@@ -131,11 +136,29 @@ def generate_series_narrative(
     window_type: str = "rolling_10y",
     lang: str = "es",
 ) -> str:
-    """Builds one plain-language sentence describing a single series,
-    in the requested language (default Spanish, for backward
-    compatibility with existing callers/tests)."""
+    """
+    Builds one plain-language sentence describing a single series.
+
+    Window selection: if the requested window (default rolling_10y)
+    shows no CSD signal but full_history does, the narrative switches
+    to full_history and says so explicitly — otherwise the domain
+    fragility score (which considers both windows) and the narrative
+    (which used to always describe only rolling_10y) could silently
+    disagree, as found in production on 2026-09-16 for m1 (see
+    SERIES_METADATA.md, Decisions Log).
+    """
     if lang not in SUPPORTED_LANGUAGES:
         raise ValueError(f"Unsupported language '{lang}'. Supported: {SUPPORTED_LANGUAGES}")
+
+    effective_window = window_type
+    long_term_note = ""
+    if window_type == "rolling_10y" and not _get_csd_flag(results_df, series_key, "rolling_10y"):
+        if _get_csd_flag(results_df, series_key, "full_history"):
+            effective_window = "full_history"
+            long_term_note = {
+                "es": " (esta señal aparece al ver la historia completa, no en la última década por sí sola)",
+                "en": " (this signal appears over the full history, not in the last decade alone)",
+            }[lang]
 
     display_name, is_plural = SERIES_DISPLAY_NAMES.get(series_key, {}).get(lang, (series_key, False))
     if lang == "es":
@@ -143,16 +166,16 @@ def generate_series_narrative(
     else:
         verb = "are" if is_plural else "is"
 
-    percentile = _get_stat(results_df, series_key, window_type, "percentile_rank")
-    ac1_tau = _get_stat(results_df, series_key, window_type, "ac1_trend_tau")
-    ac1_sig = _get_significance(results_df, series_key, window_type, "ac1_trend_tau")
-    var_tau = _get_stat(results_df, series_key, window_type, "variance_trend_tau")
-    var_sig = _get_significance(results_df, series_key, window_type, "variance_trend_tau")
+    percentile = _get_stat(results_df, series_key, effective_window, "percentile_rank")
+    ac1_tau = _get_stat(results_df, series_key, effective_window, "ac1_trend_tau")
+    ac1_sig = _get_significance(results_df, series_key, effective_window, "ac1_trend_tau")
+    var_tau = _get_stat(results_df, series_key, effective_window, "variance_trend_tau")
+    var_sig = _get_significance(results_df, series_key, effective_window, "variance_trend_tau")
 
     level = _level_phrase(percentile, lang)
     trend = _trend_phrase(ac1_tau, ac1_sig, var_tau, var_sig, lang)
 
-    sentence = f"{display_name} {verb} {level}, {trend}."
+    sentence = f"{display_name} {verb} {level}, {trend}{long_term_note}."
     return sentence[0].upper() + sentence[1:]
 
 

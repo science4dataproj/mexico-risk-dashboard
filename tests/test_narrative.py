@@ -254,3 +254,26 @@ def test_composite_technical_summary_handles_zero_flagged():
     result = generate_composite_technical_summary(domains, 10.0)
     assert "Ninguno de los" in result["es"]
     assert "None of the" in result["en"]
+
+def test_narrative_switches_to_full_history_when_rolling_10y_has_no_signal():
+    """
+    Regression test for the real m1 discrepancy found 2026-09-16: full
+    history showed a significant CSD flag while rolling_10y did not,
+    but the narrative (fixed to rolling_10y) silently ignored it,
+    contradicting the domain score (which uses both windows).
+    """
+    rows = [
+        _row("m1", "rolling_10y", "percentile_rank", 50.0),
+        _row("m1", "rolling_10y", "ac1_trend_tau", 0.01, flag_significant=False),
+        _row("m1", "rolling_10y", "variance_trend_tau", 0.31, flag_significant=False),
+        _row("m1", "rolling_10y", "critical_slowing_down_flag", 0.0),
+        _row("m1", "full_history", "percentile_rank", 98.0),
+        _row("m1", "full_history", "ac1_trend_tau", 0.45, flag_significant=True),
+        _row("m1", "full_history", "variance_trend_tau", 0.80, flag_significant=True),
+        _row("m1", "full_history", "critical_slowing_down_flag", 1.0),
+    ]
+    df = pd.DataFrame(rows)
+    text = generate_series_narrative(df, "m1")
+    assert "consistente" in text  # ahora sí debe reflejar la señal de full_history
+    assert "historia completa" in text
+    assert "percentil 98" in text  # debe usar el percentil de full_history, no el de rolling_10y (50)

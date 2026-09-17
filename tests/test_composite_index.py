@@ -50,17 +50,25 @@ def test_domain_with_all_signals_off_scores_zero_and_stable():
 
 
 def test_domain_with_all_signals_firing_scores_high_and_fragile():
+    """
+    Both series×window combinations have BOTH trend stats present and
+    significant — a realistic 'all signals firing' scenario, matching
+    how compute_early_warning_stats() always produces ac1 and variance
+    together. The critical_slowing_down_flag row is deliberately
+    omitted here: is_csd_active() no longer reads that column at all
+    (see Decisions Log) — it derives activity purely from the two
+    individual trend stats' post-correction significance.
+    """
     rows = [
         _row("fx_rate_fix", "full_history", "ac1_trend_tau", 0.5, flag_significant=True),
         _row("fx_rate_fix", "full_history", "variance_trend_tau", 0.6, flag_significant=True),
-        _row("fx_rate_fix", "full_history", "critical_slowing_down_flag", 1.0),
         _row("international_reserves", "rolling_10y", "ac1_trend_tau", 0.4, flag_significant=True),
+        _row("international_reserves", "rolling_10y", "variance_trend_tau", 0.45, flag_significant=True),
     ]
     df = pd.DataFrame(rows)
     result = compute_domain_fragility_score(df, "external_stability")
     assert result.score == 100.0
     assert result.label.status_id == "fragile"
-
 
 def test_fiscal_solvency_never_enters_composite_average():
     rows = [
@@ -83,3 +91,18 @@ def test_composite_is_unweighted_average_of_domain_scores():
     result = compute_composite_index(df)
     manual_avg = round(sum(d.score for d in result.domain_scores) / 5, 1)
     assert result.composite_score == manual_avg
+
+def test_is_csd_active_ignores_pretcorrection_value_column():
+    """
+    Regression test for the real cetes_28d bug: critical_slowing_down_flag's
+    'value' column can be 1.0 (pre-correction) while neither individual
+    stat survives FDR correction. is_csd_active must say False in that case.
+    """
+    rows = [
+        _row("cetes_28d", "full_history", "ac1_trend_tau", 0.3, flag_significant=False),  # no survive FDR
+        _row("cetes_28d", "full_history", "variance_trend_tau", 0.3, flag_significant=False),  # no survive FDR
+        _row("cetes_28d", "full_history", "critical_slowing_down_flag", 1.0),  # misleading pre-correction value
+    ]
+    df = pd.DataFrame(rows)
+    from src.reporting.composite_index import is_csd_active
+    assert is_csd_active(df, "cetes_28d", "full_history") == False

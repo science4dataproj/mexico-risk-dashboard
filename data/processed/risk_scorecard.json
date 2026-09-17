@@ -1,18 +1,18 @@
 {
-  "generated_at": "2026-09-15T23:05:22.646472+00:00",
-  "composite_score": 62.9,
+  "generated_at": "2026-09-17T02:20:15.603114+00:00",
+  "composite_score": 12.7,
   "composite_label": {
-    "status_id": "monitor",
-    "es": "Tendencia a monitorear",
-    "en": "Trend to monitor"
+    "status_id": "stable",
+    "es": "Sin cambios relevantes",
+    "en": "No notable change"
   },
   "composite_narrative": {
-    "es": "El índice compuesto es 62.9, promedio no ponderado de 5 dominios. 4 de 5 dominios muestran una señal de fragilidad a vigilar o fuerte: Estabilidad externa, Liquidez, Tasas y política monetaria, Precios.",
-    "en": "The composite index is 62.9, an unweighted average across 5 domains. 4 of 5 domains show a monitor-level or strong fragility signal: External stability, Liquidity, Rates & monetary policy, Prices."
+    "es": "El índice compuesto es 12.7, promedio no ponderado de 5 dominios. Ninguno de los 5 dominios evaluados muestra actualmente una señal de fragilidad a vigilar o fuerte.",
+    "en": "The composite index is 12.7, an unweighted average across 5 domains. None of the 5 evaluated domains currently show a monitor-level or strong fragility signal."
   },
   "composite_narrative_stakeholder": {
-    "es": "Varios de los indicadores que monitorea este panel muestran cierta inestabilidad reciente, aunque no de forma generalizada. Es un momento para seguir de cerca la evolución, no para sacar conclusiones todavía.",
-    "en": "Several of the indicators this panel tracks show some recent instability, though not broadly across the board. This is a moment to keep watching closely, not to draw conclusions yet."
+    "es": "En conjunto, los indicadores que monitorea este panel se están comportando de forma predecible. No hay, por ahora, una señal generalizada de que la economía esté perdiendo capacidad de absorber choques.",
+    "en": "Taken together, the indicators this panel tracks are behaving predictably. There's no broad-based sign, for now, that the economy is losing its ability to absorb shocks."
   },
   "domains": [
     {
@@ -21,21 +21,21 @@
         "es": "Estabilidad externa",
         "en": "External stability"
       },
-      "score": 62.5,
+      "score": 12.5,
       "label": {
-        "status_id": "monitor",
-        "es": "Tendencia a monitorear",
-        "en": "Trend to monitor"
+        "status_id": "stable",
+        "es": "Sin cambios relevantes",
+        "en": "No notable change"
       },
-      "n_signals_active": 8,
+      "n_signals_active": 2,
       "n_signals_possible": 12,
       "narrative": {
-        "es": "El tipo de cambio está en un nivel históricamente bajo (percentil 4), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente. Las reservas internacionales están en un nivel históricamente alto (percentil 100), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad.",
-        "en": "The exchange rate is at a historically low level (4th percentile), showing a significant trend in only one of the two stability indicators, with no consistent pattern. International reserves are at a historically high level (100th percentile), showing a statistically significant, consistent trend toward greater instability."
+        "es": "El tipo de cambio está en un nivel históricamente bajo (percentil 4), sin una tendencia estadísticamente significativa de estabilidad o fragilidad. Las reservas internacionales están en un nivel históricamente alto (percentil 100), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente.",
+        "en": "The exchange rate is at a historically low level (4th percentile), showing no statistically significant trend toward stability or fragility. International reserves are at a historically high level (100th percentile), showing a significant trend in only one of the two stability indicators, with no consistent pattern."
       },
       "narrative_stakeholder": {
-        "es": "El tipo de cambio o las reservas del país muestran algo de inestabilidad reciente. Todavía no es una señal de alarma, pero vale la pena seguirla los próximos meses.",
-        "en": "The exchange rate or the country's reserves show some recent instability. This isn't an alarm yet, but it's worth watching over the coming months."
+        "es": "El peso y las reservas del país se están comportando de forma predecible. No hay señales, por ahora, de que México esté perdiendo su capacidad de amortiguar un choque externo.",
+        "en": "The peso and the country's reserves are behaving predictably. There's no sign, for now, that Mexico is losing its ability to absorb an external shock."
       }
     },
     {
@@ -44,21 +44,21 @@
         "es": "Liquidez",
         "en": "Liquidity"
       },
-      "score": 81.2,
+      "score": 31.2,
       "label": {
-        "status_id": "fragile",
-        "es": "Señal fuerte de fragilidad",
-        "en": "Strong fragility signal"
+        "status_id": "stable",
+        "es": "Sin cambios relevantes",
+        "en": "No notable change"
       },
-      "n_signals_active": 10,
+      "n_signals_active": 4,
       "n_signals_possible": 12,
       "narrative": {
-        "es": "M1 está en un nivel históricamente alto (percentil 98), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente. M2 está en un nivel históricamente alto (percentil 100), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad.",
-        "en": "M1 is at a historically high level (98th percentile), showing a significant trend in only one of the two stability indicators, with no consistent pattern. M2 is at a historically high level (100th percentile), showing a statistically significant, consistent trend toward greater instability."
+        "es": "M1 está en un nivel históricamente alto (percentil 99), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad (esta señal aparece al ver la historia completa, no en la última década por sí sola). M2 está en un nivel históricamente alto (percentil 100), sin una tendencia estadísticamente significativa de estabilidad o fragilidad.",
+        "en": "M1 is at a historically high level (99th percentile), showing a statistically significant, consistent trend toward greater instability (this signal appears over the full history, not in the last decade alone). M2 is at a historically high level (100th percentile), showing no statistically significant trend toward stability or fragility."
       },
       "narrative_stakeholder": {
-        "es": "El dinero en circulación está creciendo y moviéndose de forma cada vez menos predecible. Esto es justamente la preocupación pública más común sobre política monetaria — vale la pena vigilarla, aunque por sí sola no confirma que vaya a haber más inflación.",
-        "en": "Money in circulation is growing and behaving in an increasingly unpredictable way. This is exactly the most common public concern about monetary policy — worth watching, though on its own it doesn't confirm that more inflation is coming."
+        "es": "La cantidad de dinero circulando en la economía (M1, M2) se está moviendo de forma estable, sin señales de comportamiento errático.",
+        "en": "The amount of money circulating in the economy (M1, M2) is moving in a stable way, with no signs of erratic behavior."
       }
     },
     {
@@ -67,21 +67,21 @@
         "es": "Tasas y política monetaria",
         "en": "Rates & monetary policy"
       },
-      "score": 100.0,
+      "score": 0.0,
       "label": {
-        "status_id": "fragile",
-        "es": "Señal fuerte de fragilidad",
-        "en": "Strong fragility signal"
+        "status_id": "stable",
+        "es": "Sin cambios relevantes",
+        "en": "No notable change"
       },
-      "n_signals_active": 12,
+      "n_signals_active": 0,
       "n_signals_possible": 12,
       "narrative": {
-        "es": "Los CETES a 28 días están en un nivel históricamente bajo (percentil 25), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad. La tasa objetivo de Banxico está en un nivel históricamente bajo (percentil 28), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad.",
-        "en": "The 28-day CETES rate is at a historically low level (25th percentile), showing a statistically significant, consistent trend toward greater instability. Banxico's target rate is at a historically low level (28th percentile), showing a statistically significant, consistent trend toward greater instability."
+        "es": "Los CETES a 28 días están en un nivel históricamente bajo (percentil 25), sin una tendencia estadísticamente significativa de estabilidad o fragilidad. La tasa objetivo de Banxico está en un nivel históricamente bajo (percentil 28), sin una tendencia estadísticamente significativa de estabilidad o fragilidad.",
+        "en": "The 28-day CETES rate is at a historically low level (25th percentile), showing no statistically significant trend toward stability or fragility. Banxico's target rate is at a historically low level (28th percentile), showing no statistically significant trend toward stability or fragility."
       },
       "narrative_stakeholder": {
-        "es": "Las tasas de interés se están moviendo de forma cada vez menos predecible. Esto puede encarecer créditos, hipotecas y tarjetas con tasa variable — es la señal de este panel más directamente ligada al bolsillo de la gente.",
-        "en": "Interest rates are behaving in an increasingly unpredictable way. This can make loans, mortgages, and variable-rate credit more expensive — it's the signal in this panel most directly tied to people's day-to-day finances."
+        "es": "Las tasas de interés se están moviendo de forma predecible. El costo de pedir dinero prestado no muestra señales de volverse más errático.",
+        "en": "Interest rates are moving predictably. The cost of borrowing money shows no sign of becoming more erratic."
       }
     },
     {
@@ -90,17 +90,17 @@
         "es": "Economía real",
         "en": "Real economy"
       },
-      "score": 8.3,
+      "score": 7.1,
       "label": {
         "status_id": "stable",
         "es": "Sin cambios relevantes",
         "en": "No notable change"
       },
       "n_signals_active": 1,
-      "n_signals_possible": 9,
+      "n_signals_possible": 10,
       "narrative": {
-        "es": "El PIB trimestral está en un nivel históricamente alto (percentil 99), sin suficiente información de tendencia. La tasa de desocupación está en un nivel históricamente bajo (percentil 29), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente.",
-        "en": "Quarterly GDP is at a historically high level (99th percentile), with insufficient trend data available. The unemployment rate is at a historically low level (29th percentile), showing a significant trend in only one of the two stability indicators, with no consistent pattern."
+        "es": "El PIB trimestral está en un nivel históricamente alto (percentil 99), sin suficiente información de tendencia. La tasa de desocupación está en un nivel históricamente bajo (percentil 29), sin una tendencia estadísticamente significativa de estabilidad o fragilidad.",
+        "en": "Quarterly GDP is at a historically high level (99th percentile), with insufficient trend data available. The unemployment rate is at a historically low level (29th percentile), showing no statistically significant trend toward stability or fragility."
       },
       "narrative_stakeholder": {
         "es": "La actividad económica y el empleo se están comportando de forma estable, sin señales de deterioro.",
@@ -113,21 +113,21 @@
         "es": "Precios",
         "en": "Prices"
       },
-      "score": 62.5,
+      "score": 12.5,
       "label": {
-        "status_id": "monitor",
-        "es": "Tendencia a monitorear",
-        "en": "Trend to monitor"
+        "status_id": "stable",
+        "es": "Sin cambios relevantes",
+        "en": "No notable change"
       },
-      "n_signals_active": 4,
+      "n_signals_active": 1,
       "n_signals_possible": 6,
       "narrative": {
-        "es": "El INPC está en un nivel históricamente alto (percentil 97), mostrando una tendencia consistente y estadísticamente significativa hacia mayor inestabilidad.",
-        "en": "The CPI is at a historically high level (97th percentile), showing a statistically significant, consistent trend toward greater instability."
+        "es": "El INPC está en un nivel históricamente alto (percentil 97), sin una tendencia estadísticamente significativa de estabilidad o fragilidad.",
+        "en": "The CPI is at a historically high level (97th percentile), showing no statistically significant trend toward stability or fragility."
       },
       "narrative_stakeholder": {
-        "es": "Los precios muestran algo de inestabilidad reciente. Vale la pena seguirlo antes de sacar conclusiones.",
-        "en": "Prices show some recent instability. Worth following before drawing conclusions."
+        "es": "La inflación se está comportando de forma predecible, sin señales de descontrol.",
+        "en": "Inflation is behaving predictably, with no sign of getting out of control."
       }
     }
   ]
