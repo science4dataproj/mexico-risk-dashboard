@@ -58,46 +58,60 @@ def load_panel() -> pd.DataFrame:
     return pd.read_csv(PANEL_PATH, parse_dates=["date"])
 
 
+from tqdm import tqdm
+
+
 def run_analysis() -> pd.DataFrame:
     panel = load_panel()
     all_results = []
 
+    # Construir la lista completa de combinaciones serie×ventana primero,
+    # para que tqdm conozca el total desde el inicio y pueda mostrar
+    # porcentaje y tiempo estimado, no solo un contador sin referencia.
+    series_window_pairs = []
     for series_key, group in panel.groupby("series_key"):
-        series = group.set_index("date")["value"].dropna().sort_index()
-
+        series = group.set_index("date")["value"].dropna().sort_values()
         if series.empty:
             continue
-
         for window in get_all_windows(series):
-            # --- Level 0 / Level 1 descriptive stats ---
-            desc_df = compute_descriptive_stats(window, series_key)
-            all_results.append(desc_df)
+            series_window_pairs.append((series_key, window))
 
-            # --- Level 2: critical slowing down, frequency-aware ---
-            rolling_window = infer_rolling_window_periods(window.data)
-            if rolling_window is None:
-                all_results.append(pd.DataFrame([_skip_row(
-                    series_key, window.window_type, window.label,
-                    "Series frequency is annual (or unrecognized) — insufficient "
-                    "resolution for rolling autocorrelation/variance trend analysis.",
-                )]))
-                continue
+    progress = tqdm(
+        series_window_pairs,
+        desc="Analizando series",
+        unit="serie-ventana",
+        ncols=80,  # ancho fijo, evita que la barra se deforme en terminales angostas
+    )
 
-            if len(window.data) < rolling_window + MIN_TOTAL_OBS_FOR_EWS:
-                all_results.append(pd.DataFrame([_skip_row(
-                    series_key, window.window_type, window.label,
-                    f"Only {len(window.data)} observations in this window; need at least "
-                    f"~{rolling_window + MIN_TOTAL_OBS_FOR_EWS} for a stable trend estimate.",
-                )]))
-                continue
+    for series_key, window in progress:
+        progress.set_postfix_str(f"{series_key} ({window.window_type})")
 
-            ews_df = compute_early_warning_stats(window, series_key, rolling_window=rolling_window)
-            all_results.append(ews_df)
+        desc_df = compute_descriptive_stats(window, series_key)
+        all_results.append(desc_df)
+
+        rolling_window = infer_rolling_window_periods(window.data)
+        if rolling_window is None:
+            all_results.append(pd.DataFrame([_skip_row(
+                series_key, window.window_type, window.label,
+                "Series frequency is annual (or unrecognized) — insufficient "
+                "resolution for rolling autocorrelation/variance trend analysis.",
+            )]))
+            continue
+
+        if len(window.data) < rolling_window + MIN_TOTAL_OBS_FOR_EWS:
+            all_results.append(pd.DataFrame([_skip_row(
+                series_key, window.window_type, window.label,
+                f"Only {len(window.data)} observations in this window; need at least "
+                f"~{rolling_window + MIN_TOTAL_OBS_FOR_EWS} for a stable trend estimate.",
+            )]))
+            continue
+
+        ews_df = compute_early_warning_stats(window, series_key, rolling_window=rolling_window)
+        all_results.append(ews_df)
 
     combined = pd.concat(all_results, ignore_index=True)
     corrected = apply_multiple_testing_correction(combined)
     return corrected
-
 
 def save_results(results: pd.DataFrame) -> Path:
     Path(DATA_PROCESSED_DIR).mkdir(parents=True, exist_ok=True)

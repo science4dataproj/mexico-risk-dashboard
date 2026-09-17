@@ -120,3 +120,25 @@ def test_infer_rolling_window_periods_none_for_annual():
     annual_dates = pd.date_range("2000-01-01", periods=20, freq="YS")
     annual_series = pd.Series(np.zeros(20), index=annual_dates)
     assert infer_rolling_window_periods(annual_series) is None
+
+def test_compute_early_warning_stats_uses_surrogate_pvalues_not_theoretical():
+    """Regression test: confirms the switch away from Kendall's
+    theoretical p-value (which was found to have up to 98% false
+    positive rate — see SERIES_METADATA.md Decisions Log). A pure
+    AR(1) series with realistic short-term correlation but NO genuine
+    trend should mostly NOT be flagged, unlike the old theoretical
+    method which flagged it the vast majority of the time."""
+    rng = np.random.default_rng(7)
+    n = 300
+    values = np.zeros(n)
+    for t in range(1, n):
+        values[t] = 0.5 * values[t - 1] + rng.normal(0, 1)
+    dates = pd.date_range("2000-01-01", periods=n, freq="MS")
+    series = pd.Series(values, index=dates)
+
+    from src.analysis.windows import get_full_history_window
+    window = get_full_history_window(series)
+    df = compute_early_warning_stats(window, "test_series", rolling_window=24)
+
+    flag_row = df[df["stat_name"] == "critical_slowing_down_flag"].iloc[0]
+    assert flag_row["value"] == 0.0

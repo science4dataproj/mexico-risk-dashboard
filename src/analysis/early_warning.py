@@ -116,64 +116,62 @@ def kendall_trend_test(series: pd.Series) -> dict:
     return {"tau": tau, "p_value": p_value, "n": len(clean)}
 
 
+from src.analysis.surrogates import (
+    surrogate_trend_test,
+    rolling_autocorr_lag1_array,
+    rolling_variance_array,
+)
+
+N_SURROGATES_PRODUCTION = 1000  # ver nota de rendimiento abajo — desviación
+                                 # documentada del n=1000 de Dakos et al. (2012)
+
+
 def compute_early_warning_stats(
     window: WindowResult, series_key: str, rolling_window: int = EWS_ROLLING_WINDOW
 ) -> pd.DataFrame:
     """
     Computes the critical-slowing-down diagnostic for one series over
-    one reference window. Returns a tidy DataFrame matching the same
-    schema as descriptive.compute_descriptive_stats (series_key,
-    window_type, window_label, stat_name, value, ci_low, ci_high,
-    p_value), so both can be concatenated into one combined results table.
-
-    ci_low/ci_high are always NaN here — see module docstring for why
-    bootstrap isn't used for this particular statistic.
+    one reference window, using ARMA-surrogate significance testing
+    (Dakos et al., 2012) instead of Kendall's theoretical p-value —
+    see SERIES_METADATA.md, Decisions Log, for why the theoretical
+    version was retired (empirically inflated false-positive rate,
+    up to 98% in some series).
     """
     data = window.data.dropna()
+    raw_values = data.values
 
-    ac1_series = rolling_autocorr_lag1(data, window=rolling_window)
-    var_series = rolling_variance(data, window=rolling_window)
+    ac1_result = surrogate_trend_test(
+        raw_values, window=rolling_window, stat_fn=rolling_autocorr_lag1_array,
+        n_surrogates=N_SURROGATES_PRODUCTION,
+    )
+    var_result = surrogate_trend_test(
+        raw_values, window=rolling_window, stat_fn=rolling_variance_array,
+        n_surrogates=N_SURROGATES_PRODUCTION,
+    )
 
-    ac1_trend = kendall_trend_test(ac1_series)
-    var_trend = kendall_trend_test(var_series)
+    rows = []
+    if ac1_result is not None:
+        rows.append({
+            "stat_name": "ac1_trend_tau", "value": ac1_result.real_tau,
+            "ci_low": np.nan, "ci_high": np.nan, "p_value": ac1_result.p_value,
+        })
+    if var_result is not None:
+        rows.append({
+            "stat_name": "variance_trend_tau", "value": var_result.real_tau,
+            "ci_low": np.nan, "ci_high": np.nan, "p_value": var_result.p_value,
+        })
 
-    rows = [
-        {
-            "stat_name": "ac1_trend_tau",
-            "value": ac1_trend["tau"],
-            "ci_low": np.nan,
-            "ci_high": np.nan,
-            "p_value": ac1_trend["p_value"],
-        },
-        {
-            "stat_name": "variance_trend_tau",
-            "value": var_trend["tau"],
-            "ci_low": np.nan,
-            "ci_high": np.nan,
-            "p_value": var_trend["p_value"],
-        },
-    ]
-
-    # The combined "critical slowing down" flag requires BOTH signals to
-    # be significantly increasing — either alone is weaker evidence and
-    # more likely to be a false positive from an unrelated trend.
     both_significant_and_rising = (
-        not np.isnan(ac1_trend["p_value"])
-        and not np.isnan(var_trend["p_value"])
-        and ac1_trend["tau"] > 0
-        and var_trend["tau"] > 0
-        and ac1_trend["p_value"] < 0.05
-        and var_trend["p_value"] < 0.05
+        ac1_result is not None and var_result is not None
+        and ac1_result.real_tau > 0 and var_result.real_tau > 0
+        and ac1_result.p_value < 0.05 and var_result.p_value < 0.05
     )
-    rows.append(
-        {
-            "stat_name": "critical_slowing_down_flag",
-            "value": float(both_significant_and_rising),
-            "ci_low": np.nan,
-            "ci_high": np.nan,
-            "p_value": max(ac1_trend["p_value"], var_trend["p_value"]) if both_significant_and_rising else np.nan,
-        }
-    )
+    csd_p = max(ac1_result.p_value, var_result.p_value) if both_significant_and_rising else np.nan
+    rows.append({
+        "stat_name": "critical_slowing_down_flag",
+        "value": float(both_significant_and_rising),
+        "ci_low": np.nan, "ci_high": np.nan, "p_value": csd_p,
+    })
 
     df = pd.DataFrame(rows)
     df.insert(0, "series_key", series_key)
