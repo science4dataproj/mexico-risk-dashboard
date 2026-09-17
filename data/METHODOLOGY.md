@@ -163,7 +163,17 @@ Treating these as interchangeable would have been a real conceptual error. Per B
 
 This project is an ongoing personal research exercise, not a finished or validated forecasting tool.
 
-**It has been backtested, with a null result.** Against the three Mexican crisis episodes with sufficient data coverage to test (2008–09 global financial crisis, 2014–16 oil price collapse, and — partially — the 1994 Tequila crisis), no series, in any episode, showed a statistically significant combined critical-slowing-down signal after correction for multiple testing. This null result is consistent with, not contradicted by, existing literature: Diks et al. (2019) similarly found evidence only for Black Monday (1987) among four tested episodes. Per the project's own decision criterion, this result is evidence to prioritize building the crisis-type-specific "directed layer" (§2) over further investment in the current agnostic design.
+**It has been backtested, with a null result — but this result has very limited statistical power and should not be read as a refutation of the method.** Against the three Mexican crisis episodes with sufficient data coverage to test (2008–09 global financial crisis, 2014–16 oil price collapse, and — partially — the 1994 Tequila crisis), no series, in any episode, showed a statistically significant combined critical-slowing-down signal after correction for multiple testing.
+
+This null result is consistent with, not contradicted by, existing literature: Diks et al. (2019) similarly found evidence in only 1 of 4 tested episodes (Black Monday, 1987) — a hit rate of roughly 25%. Taking that rate as a rough prior for how often this method finds a genuine signal in a financial crisis, the probability of finding zero signals across three independent tests, purely by chance, is:
+
+```
+P(0 hits in 3 trials | true hit rate = 25%) = (0.75)^3 ≈ 42%
+```
+
+With a sample this small, the backtest does not have the statistical power to distinguish "critical slowing down does not apply to Mexican economic series" from "it applies with roughly the same modest, inconsistent success rate already documented elsewhere in the literature" — a near-coin-flip result is expected under either hypothesis. This project's null result should be read as **inconclusive**, not as evidence against the method.
+
+A more specific and more actionable explanation for the null result is design-related, not methodological: the backtest tested generic macroeconomic variables against crises with distinct underlying mechanisms — Tequila (currency/banking), 2008 (global financial contagion), and 2014 (a terms-of-trade oil shock not even represented in this project's current variable set). This is the same mismatch problem identified in Diks et al.'s own use of equity indices to test the 1997 Asian currency crisis (see §9.1). This motivates prioritizing the crisis-type-specific "directed layer" (§2) as the concrete next step, rather than treating the current null result as a dead end. Per the project's own decision criterion, this is the evidence available today to justify that prioritization.
 
 **It likely overlaps with established econometric tools.** Rising variance in a financial or economic time series is exactly what GARCH-family models (Engle, 1982; Bollerslev, 1986) are built to capture. This project has not yet been compared against a GARCH-based approach on the same data.
 
