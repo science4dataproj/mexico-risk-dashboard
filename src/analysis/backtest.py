@@ -79,6 +79,8 @@ def backtest_series(raw_series: pd.Series, crisis_name: str, series_key: str) ->
     crisis_date = KNOWN_CRISES[crisis_name]["date"]
     pre_crisis = raw_series[raw_series.index < crisis_date].dropna()
 
+    # en backtest_series(), antes de llamar infer_rolling_window_periods():
+
     window = infer_rolling_window_periods(pre_crisis)
     if window is None:
         return {"crisis_name": crisis_name, "series_key": series_key, "skipped": True,
