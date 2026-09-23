@@ -48,6 +48,8 @@ class GarchTrendResult:
     garch_p_value: float = np.nan
     n_simulations_used: int = 0
     skip_reason: str = ""
+from src.analysis.surrogates import gaussian_detrend, select_arma_order
+
 
 def fit_garch_and_test_trend(
     raw_values: np.ndarray,
@@ -56,29 +58,30 @@ def fit_garch_and_test_trend(
     seed: int = RANDOM_SEED,
 ) -> GarchTrendResult:
     """
-    Fits GARCH(1,1) to the series' detrended residuals and tests
-    whether the resulting conditional volatility shows a significant
-    rising trend, using synthetic paths simulated from the fitted
-    model itself as the null distribution (same logic as the
-    ARMA-surrogate test in surrogates.py, applied with GARCH's own
-    native simulator instead of borrowing ARMA's).
-
-    mean="AR", lags=1 lets the mean equation absorb the series' known
-    lag-1 autocorrelation (the same assumption surrogates.py already
-    makes when fitting ARMA(1,1) to these residuals) — using
-    mean="Zero" instead forced that unexplained structure into the
-    variance equation, producing degenerate persistence estimates
-    pinned at 1.0 (see SERIES_METADATA.md Decisions Log for the
-    diagnosis).
+    Two-step design, replacing the earlier mean="AR" approach: (1) fit
+    the same AIC-selected ARMA(p,q) used for this project's CSD
+    surrogates (select_arma_order) to remove the series' own
+    short-term mean structure; (2) fit GARCH(1,1) with mean="Zero" on
+    the ARMA residuals, now legitimately justified since the mean
+    structure was already removed in step 1 — arch's built-in "AR"
+    mean model cannot represent an MA component, so this avoids
+    silently ignoring q > 0 for series where the selected order needs it.
     """
     residuals = gaussian_detrend(raw_values)
 
-    std = np.std(residuals)
-    if std == 0 or not np.isfinite(std):
-        return GarchTrendResult(series_key, converged=False, skip_reason="zero or invalid variance after detrending")
-    scaled = residuals * 100 / std
+    arma_selection = select_arma_order(residuals)
+    if arma_selection["fitted"] is None:
+        return GarchTrendResult(series_key, converged=False, skip_reason="ARMA pre-whitening step failed to converge")
 
-    am = arch_model(scaled, mean="AR", lags=1, vol="Garch", p=1, q=1, dist="normal", rescale=False)
+    arma_resid = np.asarray(arma_selection["fitted"].resid)
+    arma_resid = arma_resid[~np.isnan(arma_resid)]
+
+    std = np.std(arma_resid)
+    if std == 0 or not np.isfinite(std):
+        return GarchTrendResult(series_key, converged=False, skip_reason="zero or invalid variance after ARMA pre-whitening")
+    scaled = arma_resid * 100 / std
+
+    am = arch_model(scaled, mean="Zero", vol="Garch", p=1, q=1, dist="normal", rescale=False)
     try:
         fitted = am.fit(disp="off", show_warning=False)
     except Exception as e:
@@ -88,32 +91,20 @@ def fit_garch_and_test_trend(
     alpha = params.get("alpha[1]", np.nan)
     beta = params.get("beta[1]", np.nan)
 
-    # A corner solution (alpha pinned to its lower bound, ~0) means the
-    # model found no ARCH effect beyond what the AR(1) mean already
-    # explains — the variance recursion becomes purely deterministic,
-    # so every simulated path converges to the same constant value and
-    # a trend test against that "null" is undefined, not just hard to
-    # compute. This is a legitimate finding, reported explicitly.
     if alpha < 1e-6:
         return GarchTrendResult(
-            series_key, converged=False,
-            alpha=alpha, beta=beta, persistence=alpha + beta,
-            skip_reason="alpha pinned at 0 (corner solution): no ARCH effect detected beyond the AR(1) mean — variance is effectively constant, a rising-trend test is undefined",
+            series_key, converged=False, alpha=alpha, beta=beta, persistence=alpha + beta,
+            skip_reason=f"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA{arma_selection['order']} pre-whitening",
         )
-    # AR(1) in the mean equation leaves the first conditional-volatility
-    # point undefined (no prior observation to condition on) — drop
-    # NaNs before testing for a trend, rather than letting Kendall's
-    # tau silently return NaN on the whole series.
+
     cond_vol = np.asarray(fitted.conditional_volatility)
     cond_vol = cond_vol[~np.isnan(cond_vol)]
-    if len(cond_vol) < 12:
-        return GarchTrendResult(series_key, converged=False, skip_reason=f"only {len(cond_vol)} valid conditional-volatility points after dropping NaNs")
-    if np.std(cond_vol) == 0:
-        return GarchTrendResult(series_key, converged=False, skip_reason="conditional volatility is constant — degenerate GARCH fit")
+    if len(cond_vol) < 12 or np.std(cond_vol) == 0:
+        return GarchTrendResult(series_key, converged=False, skip_reason="insufficient or constant conditional volatility")
 
     real_tau, _ = scipy_stats.kendalltau(np.arange(len(cond_vol)), cond_vol)
     if np.isnan(real_tau):
-        return GarchTrendResult(series_key, converged=False, skip_reason="Kendall's tau undefined on conditional volatility even after cleaning")
+        return GarchTrendResult(series_key, converged=False, skip_reason="Kendall's tau undefined on conditional volatility")
 
     rng = np.random.default_rng(seed)
     sim_taus = []

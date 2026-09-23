@@ -86,26 +86,134 @@ def fit_arma(residuals: np.ndarray, order: tuple[int, int, int] = DEFAULT_ARMA_O
     """Fits a low-order ARMA model to detrended residuals."""
     return ARIMA(residuals, order=order, trend="n").fit()
 
+from statsmodels.stats.diagnostic import acorr_ljungbox
+from statsmodels.tsa.stattools import acf, pacf
 
+#MAX_ARMA_ORDER = 2
+LJUNG_BOX_LAGS = 10
+
+
+def max_arma_order_for_sample(n_obs: int, min_obs_per_param: int = 15, hard_cap: int = 5) -> int:
+    """
+    Caps the ARMA order search according to how much data is
+    available, instead of a single fixed number applied to every
+    series regardless of sample size (the earlier MAX_ARMA_ORDER=2
+    default was flagged as undefended and, worse, would have been
+    inconsistently too permissive for some series and too restrictive
+    for others — see SERIES_METADATA.md Decisions Log).
+
+    `min_obs_per_param=15` is a conservative, widely used rule of
+    thumb for time-series parameter estimation (enough observations
+    per estimated parameter for reasonably stable maximum-likelihood
+    fits) — not attributed to a single canonical source, stated here
+    as a heuristic, not a theorem. `hard_cap=5` is a separate,
+    practical ceiling for computational tractability across a 9-series
+    pipeline, documented as such.
+
+    Rejected alternative: Schwert's (1989) rule for maximum lag length
+    (12*(T/100)^0.25) was considered and discarded — it was designed
+    specifically for augmented Dickey-Fuller unit-root test lag
+    selection, not general ARMA order selection, and applying it here
+    would have suggested absurdly high orders for small samples (e.g.,
+    order 9 for this project's 41-observation quarterly GDP series) —
+    the same kind of cross-context tool misapplication already caught
+    and corrected elsewhere in this project (the Chow-test and
+    sandpile/SOC episodes).
+    """
+    return max(1, min(hard_cap, n_obs // min_obs_per_param))
+
+
+def select_arma_order(residuals: np.ndarray, max_order: int | None = None) -> dict:
+    """
+    Selects ARMA(p, 0, q) order via AICc grid search (AIC corrected for
+    small-sample bias — Hurvich & Tsai, 1989, Biometrika, 76(2),
+    297-307), over (0..max_order) x (0..max_order), where max_order
+    defaults to max_arma_order_for_sample() if not given explicitly.
+    Also computes ACF/PACF on the input residuals as a diagnostic
+    (matching standard Box-Jenkins practice), stored alongside the
+    result for manual inspection — the AICc search is not treated as
+    a substitute for eyeballing these, only as the mechanized part of
+    the same workflow.
+
+    Follows selection with a Ljung-Box test on the winning model's
+    residuals: if significant autocorrelation remains even after the
+    selected order, that's reported explicitly (`adequate=False`).
+    """
+    n = len(residuals)
+    if max_order is None:
+        max_order = max_arma_order_for_sample(n)
+
+    acf_vals = acf(residuals, nlags=min(20, n // 2 - 1), fft=True)
+    pacf_vals = pacf(residuals, nlags=min(20, n // 2 - 1))
+
+    best_aicc = np.inf
+    best_order = (1, 1)  # fallback if every candidate fails to fit — documented, not silent
+    best_fitted = None
+
+    for p in range(max_order + 1):
+        for q in range(max_order + 1):
+            if p == 0 and q == 0:
+                continue
+            k = p + q + 1  # +1 for the estimated variance
+            if n - k - 1 <= 0:
+                continue  # AICc is undefined when k is too large relative to n — skip, don't crash
+            try:
+                candidate = ARIMA(residuals, order=(p, 0, q), trend="n").fit()
+            except Exception:
+                continue
+            aicc = candidate.aic + (2 * k * (k + 1)) / (n - k - 1)
+            if aicc < best_aicc:
+                best_aicc = aicc
+                best_order = (p, q)
+                best_fitted = candidate
+
+    if best_fitted is None:
+        return {
+            "order": best_order, "aicc": np.nan, "max_order_used": max_order,
+            "adequate": False, "ljung_box_p": np.nan, "fitted": None,
+            "acf": acf_vals, "pacf": pacf_vals,
+        }
+
+    lb = acorr_ljungbox(best_fitted.resid, lags=[LJUNG_BOX_LAGS], return_df=True)
+    lb_p = lb["lb_pvalue"].iloc[0]
+
+    return {
+        "order": best_order, "aicc": best_aicc, "max_order_used": max_order,
+        "adequate": bool(lb_p >= 0.05), "ljung_box_p": lb_p,
+        "fitted": best_fitted, "acf": acf_vals, "pacf": pacf_vals,
+    }
 def generate_surrogates(
     residuals: np.ndarray,
     n_surrogates: int = DEFAULT_N_SURROGATES,
-    order: tuple[int, int, int] = DEFAULT_ARMA_ORDER,
+    order: tuple[int, int, int] | None = None,
     seed: int = 42,
-) -> list[np.ndarray] | None:
+) -> tuple[list[np.ndarray], dict] | None:
     """
-    Fits ARMA to `residuals`, then generates `n_surrogates` synthetic
-    series of the same length sharing the fitted short-term
-    correlation structure but with no systematic trend by construction.
-    Returns None if the ARMA fit fails to converge (documented, not
-    silently misreported as a result).
+    Fits ARMA to `residuals` (order auto-selected via AIC + Ljung-Box
+    if `order` is not given explicitly — see select_arma_order), then
+    generates `n_surrogates` synthetic series sharing the fitted
+    short-term correlation structure but with no systematic trend.
+    Returns (surrogates, selection_info) so callers can report which
+    order was used and whether the Ljung-Box check passed — or None if
+    fitting failed to converge.
     """
     n = len(residuals)
-    try:
-        fitted = fit_arma(residuals, order=order)
-    except Exception:
-        return None
+    selection_info = {"order": order, "aic": np.nan, "adequate": None, "ljung_box_p": np.nan}
 
+    if order is None:
+        selection = select_arma_order(residuals)
+        if selection["fitted"] is None:
+            return None
+        fitted = selection["fitted"]
+        selection_info = {k: v for k, v in selection.items() if k != "fitted"}
+    else:
+        try:
+            fitted = fit_arma(residuals, order=order)
+        except Exception:
+            return None
+        selection_info["order"] = order
+
+    p, _, q = selection_info["order"][0], 0, selection_info["order"][1]
     ar = np.r_[1, -fitted.arparams] if len(fitted.arparams) else np.r_[1]
     ma = np.r_[1, fitted.maparams] if len(fitted.maparams) else np.r_[1]
     sigma = np.sqrt(fitted.params[-1])
@@ -113,11 +221,11 @@ def generate_surrogates(
     process = ArmaProcess(ar, ma)
     rng = np.random.default_rng(seed)
 
-    return [
+    surrogates = [
         process.generate_sample(nsample=n, scale=sigma, distrvs=lambda size: rng.standard_normal(size))
         for _ in range(n_surrogates)
     ]
-
+    return surrogates, selection_info
 
 @dataclass
 class SurrogateTrendTestResult:
@@ -125,22 +233,23 @@ class SurrogateTrendTestResult:
     p_value: float
     n_surrogates_used: int
 
+@dataclass
+class SurrogateTrendTestResult:
+    real_tau: float
+    p_value: float
+    n_surrogates_used: int
+    arma_order: tuple[int, int] = None
+    arma_adequate: bool = None  # False = Ljung-Box found residual autocorrelation even after selection
+
 
 def surrogate_trend_test(
     raw_values: np.ndarray,
     window: int,
     stat_fn,
     n_surrogates: int = DEFAULT_N_SURROGATES,
-    order: tuple[int, int, int] = DEFAULT_ARMA_ORDER,
+    order: tuple[int, int, int] | None = None,
     seed: int = 42,
 ) -> SurrogateTrendTestResult | None:
-    """
-    Full Dakos et al. (2012) pipeline for one series and one rolling
-    statistic: detrend -> real trend -> fit ARMA on residuals ->
-    generate surrogates -> same rolling stat + Kendall tau on each ->
-    empirical p-value (Phipson & Smyth, 2010 correction) of the real
-    tau against the surrogate (no-trend) distribution.
-    """
     residuals = gaussian_detrend(raw_values)
 
     real_stat = stat_fn(residuals, window)
@@ -149,9 +258,10 @@ def surrogate_trend_test(
         return None
     real_tau, _ = scipy_stats.kendalltau(np.arange(len(real_stat)), real_stat)
 
-    surrogates = generate_surrogates(residuals, n_surrogates=n_surrogates, order=order, seed=seed)
-    if surrogates is None:
+    result = generate_surrogates(residuals, n_surrogates=n_surrogates, order=order, seed=seed)
+    if result is None:
         return None
+    surrogates, selection_info = result
 
     surrogate_taus = []
     for surrogate in surrogates:
@@ -168,4 +278,7 @@ def surrogate_trend_test(
 
     b = sum(1 for t in surrogate_taus if t >= real_tau)
     m = len(surrogate_taus)
-    return SurrogateTrendTestResult(real_tau=real_tau, p_value=(b + 1) / (m + 1), n_surrogates_used=m)
+    return SurrogateTrendTestResult(
+        real_tau=real_tau, p_value=(b + 1) / (m + 1), n_surrogates_used=m,
+        arma_order=selection_info.get("order"), arma_adequate=selection_info.get("adequate"),
+    )
