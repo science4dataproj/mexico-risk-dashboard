@@ -707,6 +707,86 @@ independent of any single series.
    `run_garch_comparison.py`. `backtest.py` itself never had one —
    it was always invoked via an inline `python3 -c "..."` snippet, an
    inconsistency found and fixed 2026-09-17.
+
+25. **M2/international-reserves ratio — the single best-performing
+   leading indicator for currency crises identified by Kaminsky,
+   Lizondo & Reinhart (1998) — was computed for the first time
+   (`src/transform/derived_series.py`, `compute_m2_reserves_ratio()`)
+   and tested against both current state and the historical backtest.
+   Result: no significant signal anywhere, even with the
+   literature-correct variable.**
+
+   **Motivation:** this ratio had been identified as a gap since
+   Decisions Log #15's variable-coverage audit (§3 of METHODOLOGY.md)
+   — both inputs (`m2`, `international_reserves`) were already in the
+   panel, but the derived ratio itself was never computed or tested.
+   Closing this gap directly tests the hypothesis (raised during
+   project review) that the null CSD/GARCH results might reflect
+   "measuring the wrong variable" rather than a genuine absence of the
+   bifurcation mechanism — the same critique leveled at Diks et al.
+   (2019) for testing equity indices against the 1997 Asian currency
+   crisis (a mechanism mismatch; see METHODOLOGY.md §9.1).
+
+   **Coverage limitation, stated upfront:** M2 begins 2000-12, so this
+   ratio cannot be computed before that date — it is **mathematically
+   impossible to test against the 1994 Tequila crisis**, the canonical
+   currency-crisis case this indicator is specifically meant to detect
+   (KLR's own paper is about currency crises). Only 2008-09 and
+   2014-16 were testable.
+
+   **Results** (surrogate-ARMA method, same as production):
+
+   | Context | ac1_tau (p) | var_tau (p) |
+   |---|---|---|
+   | full_history (25y) | -0.032 (0.584) | -0.295 (0.962) |
+   | rolling_10y | -0.186 (0.743) | +0.003 (0.501) |
+   | Backtest: 2008 | +0.696 (0.095) | +0.420 (0.274) |
+   | Backtest: 2014 | +0.007 (0.567) | -0.173 (0.627) |
+   | Backtest: 1994 | — no data before this date — | |
+
+   After Benjamini-Hochberg correction across all 8 p-values in this
+   batch: the smallest adjusted p-value (2008's ac1_tau) rises from
+   0.095 to **0.756** — nowhere near the 0.05 threshold. No result in
+   this table is statistically significant, before or after
+   correction.
+
+   **Interpretation:** this is stronger evidence than the earlier
+   9-variable agnostic backtest (#19) specifically because it directly
+   answers the "wrong variable" hypothesis for the one crisis type
+   (currency) where this project could test the literature's own
+   best-documented leading indicator, against the one episode (2008)
+   with sufficient data. The result does not merely fail to confirm
+   the bifurcation mechanism — it fails to confirm it even when using
+   the specific variable the early-warning literature identifies as
+   most diagnostic for this specific crisis type. Combined with #19
+   and #22 (GARCH's independent null result), this is now three
+   separate lines of evidence — agnostic CSD, GARCH, and
+   literature-directed CSD — all consistently null. This does not
+   prove the bifurcation mechanism is wrong for Mexican economic data;
+   with this few episodes, that claim is not supportable either (see
+   #19's statistical power discussion — n=3 or fewer per line of
+   evidence has limited power to distinguish "no effect" from
+   "under-powered test"). It is, however, the most direct and best
+   literature-grounded null result obtained in this project to date,
+   and is consistent with Guttal et al. (2016)'s own suggestion that
+   financial-market instability may not follow the same
+   bifurcation-approach mechanism CSD theory describes in ecological
+   systems.
+
+   **Not integrated into the production scorecard.** Given the null
+   result and the severe 1994 coverage gap, `m2_reserves_ratio` is
+   documented here as a completed, honest investigation — not added
+   as a tenth monitored series in `risk_scorecard.json`. Revisit if
+   future work adds pre-2000 M2 data or a comparable liquidity/reserves
+   proxy with longer history.
+
+26. **`backtest_series()`'s skip-reason message was corrected for the
+   case of a series with zero pre-crisis observations** (previously
+   mislabeled "annual or unrecognized frequency" — found testing
+   `m2_reserves_ratio` against 1994, where the real cause is that M2
+   itself starts in 2000, six years after the crisis, not a frequency
+   issue). `backtest_series()` now checks for empty pre-crisis data
+   explicitly before calling `infer_rolling_window_periods()`.
 ---
 
 ## Appendix: Confirmed Data Ranges (as of first successful pull, 2026-09-12)
