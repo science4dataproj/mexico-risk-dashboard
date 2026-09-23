@@ -1,0 +1,10 @@
+series,n_points,converged,skip_reason,persistence(a+b),garch_tau,garch_p,garch_significant_rising,csd_variance_rising,csd_flag_combined
+fx_rate_fix,2515,True,,0.96,-0.159,0.973,False,False,False
+cetes_28d,522,True,,0.985,0.133,0.2739,False,False,False
+target_rate,3641,True,,0.996,0.001,0.4893,False,False,False
+international_reserves,522,True,,0.468,0.37,0.0005,True,True,False
+m1,121,True,,0.395,0.017,0.4238,False,False,False
+m2,121,True,,0.583,-0.008,0.5422,False,False,False
+quarterly_gdp,41,False,"alpha pinned at 0 (corner solution): no ARCH effect detected beyond the AR(1) mean — variance is effectively constant, a rising-trend test is undefined",,,,False,,
+unemployment_rate,121,True,,0.979,-0.037,0.5252,False,False,False
+cpi,121,False,"alpha pinned at 0 (corner solution): no ARCH effect detected beyond the AR(1) mean — variance is effectively constant, a rising-trend test is undefined",,,,False,False,False

@@ -1,0 +1,10 @@
+series,converged,skip_reason,persistence(a+b),garch_tau,garch_p,garch_significant_rising,csd_variance_rising,csd_flag_combined
+fx_rate_fix,True,,1.0,0.513,0.005,True,True,False
+cetes_28d,True,,0.979,0.331,0.005,True,False,True
+target_rate,True,,0.998,0.256,0.1194,False,False,False
+international_reserves,True,,0.998,0.511,0.1045,False,False,False
+m1,True,,1.0,0.921,0.005,True,True,True
+m2,True,,1.0,0.922,0.005,True,True,False
+quarterly_gdp,True,,1.0,0.872,0.005,True,True,False
+unemployment_rate,True,,0.979,-0.316,0.8209,False,False,False
+cpi,True,,1.0,0.642,0.005,True,True,False
