@@ -5,3 +5,4 @@ pytest
 statsmodels
 scipy
 tqdm
+arch
