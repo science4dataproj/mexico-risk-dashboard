@@ -58,8 +58,8 @@
     margin: 0 0 14px;
   }
   h1 {
-    font-family: var(--serif); font-weight: 500; font-size: clamp(28px, 4.5vw, 38px);
-    line-height: 1.2; margin: 0 0 18px; letter-spacing: -0.01em;
+    font-family: var(--serif); font-weight: 500; font-size: clamp(26px, 4.2vw, 36px);
+    line-height: 1.25; margin: 0 0 18px; letter-spacing: -0.01em;
   }
   .lede {
     font-family: var(--sans); color: var(--ink-soft); font-size: 16.5px;
@@ -76,8 +76,8 @@
     color: var(--accent); letter-spacing: 0.03em; margin: 0 0 6px;
   }
   h2.story-heading {
-    font-family: var(--serif); font-weight: 500; font-size: 23px;
-    margin: 0 0 18px; line-height: 1.3;
+    font-family: var(--serif); font-weight: 500; font-size: 22px;
+    margin: 0 0 18px; line-height: 1.32;
   }
 
   section.story p {
@@ -129,7 +129,7 @@
   .tag-partial { color: var(--accent); font-weight: 600; }
   .tag-no { color: var(--ink-faint); }
 
-  /* ---- Numbered steps for the discovery narrative ---- */
+  /* ---- Numbered steps ---- */
   .steps { counter-reset: step; margin: 22px 0; }
   .step { display: flex; gap: 14px; margin-bottom: 20px; }
   .step-num {
@@ -166,57 +166,57 @@
     <div data-lang-content="es">
       <p class="kicker">Estudio de caso — proyecto de investigación personal</p>
       <h1>Medición de la fragilidad económica de México usando critical slowing down</h1>
-      <p class="lede">Bitácora del proceso de experimentación: qué se construyó, qué salió mal en el camino, cómo se corrigió con evidencia, y qué tan lejos está todavía de dar una respuesta confiable.</p>
+      <p class="lede">Este documento describe el proceso de investigación: el diseño metodológico, las inconsistencias identificadas y corregidas durante el desarrollo, y el alcance real de las conclusiones obtenidas hasta la fecha.</p>
     </div>
     <div data-lang-content="en">
       <p class="kicker">Case study — personal research project</p>
       <h1>Measuring Mexico's economic fragility using critical slowing down</h1>
-      <p class="lede">Research Log: what was built, what went wrong along the way, how it was corrected based on evidence, and how far it remains from yielding a reliable answer.</p>
+      <p class="lede">This document describes the research process: the methodological design, inconsistencies identified and corrected during development, and the actual scope of the conclusions obtained to date.</p>
     </div>
   </header>
 
   <main>
 
-    <!-- 1. THE PROBLEM -->
+    <!-- 1. CONTEXT -->
     <section class="story">
-      <p class="story-label" data-lang-content="es">01 — EL PROBLEMA</p>
-      <p class="story-label" data-lang-content="en">01 — THE PROBLEM</p>
+      <p class="story-label" data-lang-content="es">01 — CONTEXTO</p>
+      <p class="story-label" data-lang-content="en">01 — CONTEXT</p>
 
       <div data-lang-content="es">
-        <h2 class="story-heading">Dos narrativas, un ambiente polarizado</h2>
-        <p>En el debate público mexicano coexisten narrativas opuestas sobre el rumbo económico del país desde 2018. Hay quienes aseguran que el aumento sostenido al salario mínimo en las magnitudes que se ha estado haciendo y la expansión de programas sociales representan una corrección necesaria frente a administraciones previas. La otra facción advierte que estas mismas políticas conducen al país, de forma gradual, hacia una crisis comparable a la de los años ochenta.</p>
-        <p>Este proyecto no busca arbitrar cuál narrativa es correcta — eso excede lo que un análisis estadístico puede resolver. Parte de una premisa distinta: la economía de un país, como cualquier sistema donde múltiples agentes se adaptan y reaccionan entre sí, produce patrones que son difíciles de predecir con total exactitud en tiempo y magnitud. Esa es la observación central de la teoría de <strong>sistemas complejos</strong>, y es el marco que este trabajo usa para acercarse a la pregunta de fondo: ¿hay señales estadísticas de fragilidad creciente, más allá de lo que cualquiera de las dos posturas actuales en México asume de antemano?</p>
+        <h2 class="story-heading">Dos narrativas, un entorno polarizado</h2>
+        <p>En el debate público mexicano coexisten narrativas opuestas sobre el rumbo económico del país desde 2018. Un grupo sostiene que el aumento sostenido al salario mínimo y la expansión de programas sociales representan una corrección necesaria frente a administraciones previas. El otro advierte que estas mismas políticas conducen al país, de forma gradual, hacia una crisis comparable a la de los años ochenta.</p>
+        <p>Este proyecto no busca arbitrar cuál narrativa es correcta: esa determinación excede lo que un análisis estadístico puede resolver. Parte de una premisa distinta: la economía de un país, como cualquier sistema donde múltiples agentes se adaptan y reaccionan entre sí, produce patrones difíciles de predecir con exactitud en tiempo y magnitud. Esa es la observación central de la teoría de <strong>sistemas complejos</strong>, y es el marco que este trabajo utiliza para abordar la pregunta de fondo: ¿existen señales estadísticas de fragilidad creciente, independientemente de lo que cualquiera de las dos posturas asuma de antemano?</p>
       </div>
       <div data-lang-content="en">
         <h2 class="story-heading">Two narratives, one polarized environment</h2>
-        <p>Mexican public debate holds two competing narratives about the country's economic direction since 2018. Some argue that sustained minimum-wage increases — at the scale they've been implemented — and expanded social programs represent a necessary correction relative to prior administrations. The other side warns that these same policies are gradually steering the country toward a crisis comparable to the 1980s.</p>
-        <p>This project doesn't try to arbitrate which narrative is correct — that's beyond what a statistical analysis can resolve. It starts from a different premise: a country's economy, like any system where many agents adapt and react to one another, produces patterns that are difficult to predict with full precision in timing and magnitude. That's the central observation of <strong>complex systems theory</strong>, and it's the framework this work uses to approach the underlying question: are there statistical signs of growing fragility, beyond what either of Mexico's current positions assumes in advance?</p>
+        <p>Mexican public debate holds two competing narratives about the country's economic direction since 2018. One holds that sustained minimum-wage increases and expanded social programs represent a necessary correction relative to prior administrations. The other warns that these same policies are gradually steering the country toward a crisis comparable to the 1980s.</p>
+        <p>This project does not attempt to determine which narrative is correct: that determination is beyond what a statistical analysis can resolve. It starts from a different premise: a country's economy, like any system in which many agents adapt and react to one another, produces patterns that are difficult to predict with precision in timing and magnitude. This is the central observation of <strong>complex systems theory</strong>, and it is the framework this work uses to address the underlying question: are there statistical signs of growing fragility, independent of what either position assumes in advance?</p>
       </div>
     </section>
 
-    <!-- 2. THE IDEA -->
+    <!-- 2. THEORETICAL FOUNDATION -->
     <section class="story">
-      <p class="story-label" data-lang-content="es">02 — LA IDEA</p>
-      <p class="story-label" data-lang-content="en">02 — THE IDEA</p>
+      <p class="story-label" data-lang-content="es">02 — MARCO TEÓRICO</p>
+      <p class="story-label" data-lang-content="en">02 — THEORETICAL FRAMEWORK</p>
 
       <div data-lang-content="es">
-        <h2 class="story-heading">Tomar prestado de la ecología</h2>
-        <p>La herramienta elegida fue la <strong>desaceleración crítica</strong> (<em>critical slowing down</em>): el patrón que presenta un sistema que se aproxima a un cambio de régimen es mostrar una autocorrelación creciente y oscilar con mayor amplitud (varianza creciente).</p>
-        <p>Vale la pena atribuir esta idea con precisión, porque suele citarse de forma imprecisa. El resultado matemático que explica <em>por qué</em> ocurre —cerca de una bifurcación, el eigenvalor dominante de un sistema tiende a cero, ralentizando mecánicamente su recuperación— fue establecido por <strong>Wissel (1984)</strong>, y desarrollado por Carpenter y Brock (2006) para la varianza y por van Nes y Scheffer (2007) para la autocorrelación. El artículo ampliamente citado de <strong>Scheffer et al. (2009, <em>Nature</em>)</strong> <em>sintetiza</em> el fenómeno en un marco unificado, y es ese mismo artículo el que extiende explícitamente su aplicabilidad a mercados financieros, no solo a ecosistemas.</p>
-        <p>Desde entonces, la comunidad de economía financiera lo ha puesto a prueba directamente, con resultados mixtos: Diks, Hommes y Wang (2019) encontraron evidencia clara solo en el Lunes Negro de 1987, de cuatro episodios probados. Un hallazgo de Guttal et al. (2016) resulta especialmente relevante: en grandes desplomes bursátiles, la varianza sí tendía a subir de forma consistente, <strong>pero la autocorrelación no siempre lo hacía</strong> — una limitación que este proyecto hereda y no resuelve.</p>
+        <h2 class="story-heading">Una transferencia conceptual desde la ecología</h2>
+        <p>La herramienta utilizada es la <strong>desaceleración crítica</strong> (<em>critical slowing down</em>, CSD): el patrón que presenta un sistema que se aproxima a un cambio de régimen, caracterizado por una autocorrelación creciente y una mayor amplitud de oscilación (varianza creciente).</p>
+        <p>Esta idea requiere una atribución precisa, ya que suele citarse de forma imprecisa. El resultado matemático que explica por qué ocurre este fenómeno —cerca de una bifurcación, el eigenvalor dominante de un sistema tiende a cero, ralentizando mecánicamente su recuperación— fue establecido por <strong>Wissel (1984)</strong>, y desarrollado por Carpenter y Brock (2006) para la varianza y por van Nes y Scheffer (2007) para la autocorrelación. El artículo ampliamente citado de <strong>Scheffer et al. (2009, <em>Nature</em>)</strong> sintetiza estos hallazgos en un marco unificado, y extiende explícitamente su aplicabilidad a mercados financieros, no únicamente a ecosistemas.</p>
+        <p>Estudios posteriores en economía financiera han puesto a prueba este marco directamente, con resultados mixtos: Diks, Hommes y Wang (2019) encontraron evidencia clara únicamente en el Lunes Negro de 1987, de cuatro episodios evaluados. Un hallazgo de Guttal et al. (2016) resulta particularmente relevante: en grandes desplomes bursátiles, la varianza tendió a subir de forma consistente, pero la autocorrelación no siempre lo hizo — una limitación que este proyecto hereda y que no resuelve.</p>
       </div>
       <div data-lang-content="en">
-        <h2 class="story-heading">Borrowing from ecology</h2>
-        <p>The tool chosen was <strong>critical slowing down (CSD)</strong>: the pattern shown by a system approaching a regime change is rising autocorrelation and oscillating with growing amplitude (rising variance).</p>
-        <p>This idea deserves precise attribution, since it's often cited imprecisely. The mathematical result explaining <em>why</em> this happens — near a bifurcation, a system's dominant eigenvalue approaches zero, mechanically slowing its recovery — was established by <strong>Wissel (1984)</strong>, and developed by Carpenter and Brock (2006) for variance and van Nes and Scheffer (2007) for autocorrelation. The widely cited <strong>Scheffer et al. (2009, <em>Nature</em>)</strong> paper <em>synthesizes</em> the phenomenon into a unified framework, and that same paper explicitly extends its applicability to financial markets, not just ecosystems.</p>
-        <p>Since then, financial economics has tested it directly, with mixed results: Diks, Hommes, and Wang (2019) found clear evidence only for Black Monday (1987), out of four episodes tested. A finding from Guttal et al. (2016) is especially relevant: in major stock market crashes, variance did tend to rise consistently, <strong>but autocorrelation did not always do so</strong> — a limitation this project inherits and does not resolve.</p>
+        <h2 class="story-heading">A conceptual transfer from ecology</h2>
+        <p>The tool used is <strong>critical slowing down (CSD)</strong>: the pattern exhibited by a system approaching a regime change, characterized by rising autocorrelation and greater oscillation amplitude (rising variance).</p>
+        <p>This concept requires precise attribution, as it is often cited imprecisely. The mathematical result explaining why this occurs — near a bifurcation, a system's dominant eigenvalue approaches zero, mechanically slowing its recovery — was established by <strong>Wissel (1984)</strong>, and developed by Carpenter and Brock (2006) for variance and van Nes and Scheffer (2007) for autocorrelation. The widely cited <strong>Scheffer et al. (2009, <em>Nature</em>)</strong> paper synthesizes these findings into a unified framework, and explicitly extends their applicability to financial markets, not only to ecosystems.</p>
+        <p>Subsequent work in financial economics has tested this framework directly, with mixed results. Diks, Hommes, and Wang (2019) found clear evidence only for Black Monday (1987), out of four episodes evaluated. A finding from Guttal et al. (2016) is particularly relevant: in major stock market crashes, variance tended to rise consistently, but autocorrelation did not always do so — a limitation this project inherits and does not resolve.</p>
       </div>
     </section>
 
-    <!-- 3. WHAT WAS BUILT -->
+    <!-- 3. METHODOLOGICAL DESIGN -->
     <section class="story">
-      <p class="story-label" data-lang-content="es">03 — QUÉ SE CONSTRUYÓ</p>
-      <p class="story-label" data-lang-content="en">03 — WHAT WAS BUILT</p>
+      <p class="story-label" data-lang-content="es">03 — DISEÑO METODOLÓGICO</p>
+      <p class="story-label" data-lang-content="en">03 — METHODOLOGICAL DESIGN</p>
 
       <div data-lang-content="es">
         <h2 class="story-heading">Nueve series, cinco dominios</h2>
@@ -242,104 +242,146 @@
       </div>
 
       <div class="callout" data-lang-content="es">
-        <strong>Una elección honesta, no una óptima:</strong> estos nueve indicadores se eligieron por disponibilidad de series oficiales confiables — no porque la literatura de crisis los señalara como los mejores predictores. Una auditoría posterior contra esa literatura (ver sección 06) encontró huecos reales.
+        <strong>Criterio de selección:</strong> estos nueve indicadores se eligieron por la disponibilidad de series oficiales confiables, no porque la literatura de crisis los identificara como los mejores predictores. Una auditoría posterior contra esa literatura (Sección 08) identificó brechas de cobertura relevantes.
       </div>
       <div class="callout" data-lang-content="en">
-        <strong>An honest choice, not an optimal one:</strong> these nine indicators were chosen for reliable official-data availability — not because the crisis literature identified them as the best predictors. A later audit against that literature (see section 06) found real gaps.
+        <strong>Selection criterion:</strong> these nine indicators were chosen based on the availability of reliable official series, not because the crisis literature identifies them as the strongest predictors. A subsequent audit against that literature (Section 08) identified relevant coverage gaps.
       </div>
     </section>
 
-    <!-- 4. THE DISCOVERY -->
+    <!-- 4. METHODOLOGICAL DIAGNOSIS -->
     <section class="story">
-      <p class="story-label" data-lang-content="es">04 — EL HALLAZGO</p>
-      <p class="story-label" data-lang-content="en">04 — THE DISCOVERY</p>
+      <p class="story-label" data-lang-content="es">04 — DIAGNÓSTICO METODOLÓGICO</p>
+      <p class="story-label" data-lang-content="en">04 — METHODOLOGICAL DIAGNOSIS</p>
 
       <div data-lang-content="es">
-        <h2 class="story-heading">Algo no cuadraba</h2>
-        <p>El sistema original probaba si la autocorrelación y varianza de cada serie mostraban una tendencia creciente, usando la tau de Kendall y su p-valor teórico estándar. Antes de confiar en ese resultado, se hizo una auditoría: ¿qué tan seguido marca "significativo" el método en fechas elegidas al azar, donde no debería haber nada especial?</p>
+        <h2 class="story-heading">Identificación de un error de calibración estadística</h2>
+        <p>El sistema original evaluaba si la autocorrelación y la varianza de cada serie mostraban una tendencia creciente, mediante la tau de Kendall y su p-valor teórico estándar. Antes de confiar en ese resultado, se realizó una auditoría de calibración: ¿con qué frecuencia el método marca un resultado como "significativo" en fechas elegidas al azar, donde no debería identificarse ninguna señal?</p>
       </div>
       <div data-lang-content="en">
-        <h2 class="story-heading">Something didn't add up</h2>
-        <p>The original system tested whether each series' autocorrelation and variance showed a rising trend, using Kendall's tau and its standard theoretical p-value. Before trusting that result, an audit was run: how often does the method flag "significant" on randomly chosen dates, where nothing special should be happening?</p>
+        <h2 class="story-heading">Identification of a statistical calibration error</h2>
+        <p>The original system tested whether each series' autocorrelation and variance showed a rising trend, using Kendall's tau and its standard theoretical p-value. Before relying on that result, a calibration audit was conducted: how frequently does the method flag a result as "significant" on randomly chosen dates, where no genuine signal should be present?</p>
       </div>
 
       <div class="steps">
         <div class="step">
           <div class="step-num"></div>
-          <div class="step-body" data-lang-content="es">Un umbral de significancia de 0.05 debería producir falsos positivos ~5% de las veces. La auditoría, sobre ~150 fechas aleatorias por serie, encontró tasas de <strong>40% a 98%</strong> — el método estaba, en la práctica, casi siempre "encontrando" algo.</div>
-          <div class="step-body" data-lang-content="en">A 0.05 significance threshold should produce false positives ~5% of the time. The audit, over ~150 random dates per series, found rates of <strong>40% to 98%</strong> — the method was, in practice, almost always "finding" something.</div>
+          <div class="step-body" data-lang-content="es">Un umbral de significancia de 0.05 debería producir falsos positivos en aproximadamente 5% de los casos. La auditoría, sobre ~150 fechas aleatorias por serie, encontró tasas de <strong>40% a 98%</strong> — el método identificaba una señal "significativa" en la gran mayoría de los casos evaluados.</div>
+          <div class="step-body" data-lang-content="en">A 0.05 significance threshold should produce false positives in approximately 5% of cases. The audit, across ~150 random dates per series, found rates of <strong>40% to 98%</strong> — the method flagged a "significant" signal in the substantial majority of cases evaluated.</div>
         </div>
         <div class="step">
           <div class="step-num"></div>
-          <div class="step-body" data-lang-content="es">La causa: la autocorrelación/varianza rodante ya es, por construcción, una serie "pegajosa" — ventanas contiguas comparten casi todos sus datos. Eso viola el supuesto de independencia detrás del p-valor de Kendall, un problema documentado en la literatura de hidrología (Yue et al., 2002).</div>
-          <div class="step-body" data-lang-content="en">The cause: rolling autocorrelation/variance is already, by construction, a "sticky" series — adjacent windows share nearly all their data. That violates the independence assumption behind Kendall's p-value, a problem documented in hydrological literature (Yue et al., 2002).</div>
+          <div class="step-body" data-lang-content="es">Causa identificada: la autocorrelación y la varianza rodantes son, por construcción, series con alta dependencia serial — ventanas contiguas comparten casi todos sus datos. Esto viola el supuesto de independencia detrás del p-valor de Kendall, un problema documentado en la literatura de hidrología (Yue et al., 2002).</div>
+          <div class="step-body" data-lang-content="en">Identified cause: rolling autocorrelation and variance are, by construction, series with high serial dependence — adjacent windows share nearly all of their underlying data. This violates the independence assumption behind Kendall's p-value, a problem documented in the hydrological literature (Yue et al., 2002).</div>
         </div>
         <div class="step">
           <div class="step-num"></div>
-          <div class="step-body" data-lang-content="es">Un primer intento de arreglo —comparar contra fechas reales de control— también falló: la historia real siempre tiene su propia dinámica genuina, no es un verdadero placebo.</div>
-          <div class="step-body" data-lang-content="en">A first fix attempt — comparing against real control dates — also failed: real history always has its own genuine dynamics, it isn't a true placebo.</div>
+          <div class="step-body" data-lang-content="es">Un primer intento de corrección —comparar contra fechas históricas reales como control— también resultó inválido: la historia económica real conserva su propia dinámica genuina y no constituye un verdadero grupo de control.</div>
+          <div class="step-body" data-lang-content="en">An initial correction attempt — comparing against real historical dates as a control — also proved invalid: real economic history retains its own genuine dynamics and does not constitute a valid control group.</div>
         </div>
         <div class="step">
           <div class="step-num"></div>
-          <div class="step-body" data-lang-content="es">La solución correcta fue adoptar el método de referencia del propio campo: <strong>Dakos et al. (2012)</strong> — generar series sintéticas ("subrogadas") que comparten la estructura de corto plazo de la serie real, pero sin ninguna tendencia genuina, y comparar contra esa distribución.</div>
-          <div class="step-body" data-lang-content="en">The correct fix was adopting the field's own reference method: <strong>Dakos et al. (2012)</strong> — generate synthetic ("surrogate") series sharing the real series' short-term structure but with no genuine trend, and compare against that distribution.</div>
+          <div class="step-body" data-lang-content="es">La corrección adoptada consiste en el método de referencia del propio campo: <strong>Dakos et al. (2012)</strong>. Se generan series sintéticas ("subrogadas") que comparten la estructura de corto plazo de la serie real, pero sin ninguna tendencia genuina, y se compara el resultado observado contra esa distribución.</div>
+          <div class="step-body" data-lang-content="en">The adopted correction follows the field's own reference method: <strong>Dakos et al. (2012)</strong>. Synthetic ("surrogate") series are generated that share the real series' short-term structure but contain no genuine trend, and the observed result is compared against that distribution.</div>
         </div>
       </div>
 
       <div data-lang-content="es">
-        <p>El efecto de la corrección fue medible, no solo teórico:</p>
+        <p>El efecto de esta corrección resultó medible, no solo teórico. El índice compuesto se recalculó con el método corregido:</p>
       </div>
       <div data-lang-content="en">
-        <p>The fix's effect was measurable, not just theoretical:</p>
+        <p>The effect of this correction proved measurable, not only theoretical. The composite index was recalculated using the corrected method:</p>
       </div>
 
       <div class="stat-shift">
-        <span><span class="num old">62.9</span><span class="label" data-lang-content="es">Método anterior (roto)</span><span class="label" data-lang-content="en">Previous method (broken)</span></span>
+        <span><span class="num old">62.9</span><span class="label" data-lang-content="es">Método anterior (con error de calibración)</span><span class="label" data-lang-content="en">Previous method (with calibration error)</span></span>
         <span class="arrow">→</span>
-        <span><span class="num">12.7</span><span class="label" data-lang-content="es">Método corregido — 16 sep. 2026</span><span class="label" data-lang-content="en">Corrected method — Sep 16, 2026</span></span>
+        <span><span class="num">11.4</span><span class="label" data-lang-content="es">Método corregido — 17 sep. 2026</span><span class="label" data-lang-content="en">Corrected method — Sep 17, 2026</span></span>
+      </div>
+
+      <div data-lang-content="es">
+        <p>El valor se ajustó una segunda vez, de 12.7 a 11.4, al corregir una decisión metodológica adicional también sin justificación específica: el orden del modelo ARMA utilizado para generar las series sintéticas estaba fijo en (1,1) para las nueve series por igual. Al reemplazarlo por una selección de orden ajustada al tamaño de muestra de cada serie, con su propia prueba de adecuación (Ljung-Box), se eliminó una señal parcial en reservas internacionales que dependía de ese orden fijo, no de una tendencia genuina en los datos.</p>
+      </div>
+      <div data-lang-content="en">
+        <p>The value was adjusted a second time, from 12.7 to 11.4, upon correcting an additional methodological decision that also lacked specific justification: the ARMA model order used to generate the synthetic series had been fixed at (1,1) uniformly across all nine series. Replacing it with a sample-size-adapted order selection, including its own adequacy test (Ljung-Box), eliminated a partial signal in international reserves that depended on that fixed order rather than on a genuine trend in the data.</p>
       </div>
     </section>
 
-    <!-- 5. THE HONEST RESULT -->
+    <!-- 5. RESULTS -->
     <section class="story">
-      <p class="story-label" data-lang-content="es">05 — EL RESULTADO, SIN INFLAR NI ESCONDER</p>
-      <p class="story-label" data-lang-content="en">05 — THE RESULT, NEITHER OVERSOLD NOR HIDDEN</p>
+      <p class="story-label" data-lang-content="es">05 — RESULTADOS</p>
+      <p class="story-label" data-lang-content="en">05 — RESULTS</p>
 
       <div data-lang-content="es">
-        <h2 class="story-heading">Ni se confirma ni se refuta</h2>
-        <p>Con el método corregido, el sistema se probó contra tres crisis mexicanas conocidas (2008-09, el petróleo de 2014-16, y parcialmente Tequila 1994-95). <strong>En ninguna, ninguna serie mostró una señal combinada estadísticamente significativa</strong> después de corregir por comparaciones múltiples.</p>
-        <p>Es tentador leer esto como "el método no funciona" — pero con una muestra de tres, ese no es un veredicto justificado. Diks et al. (2019) encontraron señal en 1 de 4 episodios — una tasa de acierto de ~25%. Si esa fuera la tasa real, la probabilidad de no encontrar nada en tres intentos, por puro azar, es:</p>
+        <h2 class="story-heading">Ausencia de señal estadísticamente significativa</h2>
+        <p>Con el método corregido, el sistema se evaluó contra tres episodios de crisis mexicana documentados: la crisis financiera de 2008-09, el colapso del precio del petróleo de 2014-16, y, de forma parcial, la crisis Tequila de 1994-95. Ninguna de las series analizadas mostró una señal combinada estadísticamente significativa, una vez aplicada la corrección por comparaciones múltiples.</p>
+        <p>Este resultado no debe interpretarse, sin más, como evidencia de que el método carece de validez: con una muestra de apenas tres episodios, esa conclusión no está estadísticamente respaldada. Diks, Hommes y Wang (2019) identificaron una señal significativa en 1 de 4 episodios evaluados, una tasa de acierto aproximada del 25%. Bajo ese supuesto, la probabilidad de no observar ninguna señal significativa en tres intentos, por azar, es la siguiente:</p>
       </div>
       <div data-lang-content="en">
-        <h2 class="story-heading">Neither confirmed nor refuted</h2>
-        <p>With the corrected method, the system was tested against three known Mexican crises (2008–09, the 2014–16 oil collapse, and partially the 1994–95 Tequila crisis). <strong>In none of them did any series show a statistically significant combined signal</strong> after correcting for multiple comparisons.</p>
-        <p>It's tempting to read this as "the method doesn't work" — but with a sample of three, that's not a justified verdict. Diks et al. (2019) found a signal in 1 of 4 episodes — roughly a 25% hit rate. If that were the true rate, the probability of finding nothing across three attempts, by pure chance, is:</p>
+        <h2 class="story-heading">Absence of a statistically significant signal</h2>
+        <p>Using the corrected method, the system was evaluated against three documented Mexican crisis episodes: the 2008–09 financial crisis, the 2014–16 oil price collapse, and, partially, the 1994–95 Tequila crisis. None of the series analyzed showed a statistically significant combined signal after applying the multiple-comparisons correction.</p>
+        <p>This result should not, on its own, be interpreted as evidence that the method lacks validity: with a sample of only three episodes, that conclusion is not statistically supported. Diks, Hommes, and Wang (2019) identified a significant signal in 1 of 4 episodes evaluated, an approximate hit rate of 25%. Under that assumption, the probability of observing no significant signal across three attempts, by chance alone, is as follows:</p>
       </div>
 
       <div class="callout">
-        <code>P(0 aciertos en 3 intentos | tasa real = 25%) = (0.75)³ ≈ 42%</code>
+        <code data-lang-content="es">P(0 señales en 3 episodios | tasa real = 25%) = (0.75)³ ≈ 42%</code>
+        <code data-lang-content="en">P(0 signals in 3 episodes | true rate = 25%) = (0.75)³ ≈ 42%</code>
       </div>
 
       <div data-lang-content="es">
-        <p>Casi una moneda al aire. El resultado se lee correctamente como <strong>inconcluso</strong>, no como una refutación del método.</p>
+        <p>Una probabilidad cercana al 42% es insuficiente para distinguir, con este diseño experimental, si el mecanismo evaluado está genuinamente ausente o si el resultado refleja una prueba con potencia estadística limitada. El hallazgo se interpreta, por tanto, como <strong>no concluyente</strong>, no como una refutación del mecanismo.</p>
       </div>
       <div data-lang-content="en">
-        <p>Nearly a coin flip. The result reads correctly as <strong>inconclusive</strong>, not as a refutation of the method.</p>
+        <p>A probability near 42% is insufficient to distinguish, given this experimental design, whether the evaluated mechanism is genuinely absent or whether the result reflects a test with limited statistical power. The finding is therefore interpreted as <strong>inconclusive</strong>, not as a refutation of the mechanism.</p>
       </div>
     </section>
 
-    <!-- 6. WHAT'S NEXT -->
+    <!-- 6. DIRECTED TEST -->
     <section class="story">
-      <p class="story-label" data-lang-content="es">06 — EL SIGUIENTE PASO</p>
-      <p class="story-label" data-lang-content="en">06 — WHAT'S NEXT</p>
+      <p class="story-label" data-lang-content="es">06 — PRUEBA DIRIGIDA POR TIPO DE CRISIS</p>
+      <p class="story-label" data-lang-content="en">06 — CRISIS-TYPE-DIRECTED TEST</p>
 
       <div data-lang-content="es">
-        <h2 class="story-heading">De agnóstico a dirigido</h2>
-        <p>La explicación más probable, y más útil, del resultado nulo: se probaron variables genéricas contra crisis con mecanismos distintos. La literatura de alerta temprana asigna variables específicas por tipo de crisis — no las mismas nueve para todo. Ese es el siguiente bloque de trabajo:</p>
+        <h2 class="story-heading">Evaluación del indicador de mayor desempeño documentado en la literatura</h2>
+        <p>Antes de aceptar el resultado nulo como definitivo, se evaluó la explicación alternativa más directa: que los nueve indicadores agnósticos, seleccionados por disponibilidad de datos, no fueran las variables mecánicamente relevantes para detectar una crisis cambiaria de forma específica. La literatura de alerta temprana ya ofrece una respuesta documentada a esta pregunta: la razón entre M2 y las reservas internacionales, identificada por Kaminsky, Lizondo y Reinhart (1998) como el indicador de mejor desempeño histórico para este tipo de crisis. Este indicador no había sido calculado previamente en el proyecto, pese a que ambos insumos (M1, M2, reservas) formaban parte del panel de datos desde su diseño inicial.</p>
+        <p>El indicador se calculó y se evaluó contra el estado actual del sistema y contra los episodios de 2008-09 y 2014-16 (la disponibilidad de datos de M2, que inicia en el año 2000, impide su evaluación contra la crisis de 1994-95). El resultado tampoco mostró una señal estadísticamente significativa, incluyendo el episodio de 2008-09 — el único con datos suficientes para una evaluación completa de este indicador específico.</p>
       </div>
       <div data-lang-content="en">
-        <h2 class="story-heading">From agnostic to directed</h2>
-        <p>The most likely, and most useful, explanation for the null result: generic variables were tested against crises with distinct mechanisms. The early-warning literature assigns specific variables per crisis type — not the same nine for everything. That's the next body of work:</p>
+        <h2 class="story-heading">Evaluation of the literature's best-documented indicator</h2>
+        <p>Before accepting the null result as definitive, the most direct alternative explanation was evaluated: that the nine agnostic indicators, selected for data availability, were not the mechanistically relevant variables for detecting a currency crisis specifically. The early-warning literature already offers a documented answer to this question: the ratio of M2 to international reserves, identified by Kaminsky, Lizondo, and Reinhart (1998) as the best-performing historical indicator for this crisis type. This indicator had not previously been computed in the project, despite both inputs (M1, M2, reserves) having been part of the data panel since its initial design.</p>
+        <p>The indicator was computed and evaluated against the system's current state and against the 2008–09 and 2014–16 episodes (M2 data availability, which begins in 2000, precludes its evaluation against the 1994–95 crisis). The result likewise showed no statistically significant signal, including for the 2008–09 episode — the only one with sufficient data for a complete evaluation of this specific indicator.</p>
+      </div>
+    </section>
+
+    <!-- 7. CROSS-VALIDATION -->
+    <section class="story">
+      <p class="story-label" data-lang-content="es">07 — VALIDACIÓN CRUZADA</p>
+      <p class="story-label" data-lang-content="en">07 — CROSS-VALIDATION</p>
+
+      <div data-lang-content="es">
+        <h2 class="story-heading">Comparación con un modelo econométrico independiente (GARCH)</h2>
+        <p>El componente de varianza creciente que este análisis evalúa corresponde, conceptualmente, al fenómeno que los modelos GARCH modelan en econometría financiera desde 1982 (Engle) y 1986 (Bollerslev). Se ajustó un modelo GARCH(1,1) sobre las mismas series y se comparó su señal de volatilidad condicional contra la señal de varianza del método principal. En las ventanas donde ambos métodos lograron converger a un resultado interpretable, coincidieron, en la mayoría de los casos, en la ausencia de una tendencia significativa; de forma independiente, GARCH tampoco identificó una señal significativa en ninguno de los episodios de crisis evaluados en el backtest.</p>
+        <p>El hallazgo más relevante de este ejercicio, sin embargo, fue de naturaleza metodológica: en el 80% de las ventanas cortas utilizadas en el backtest, el modelo GARCH no logró converger de forma confiable. Esto no constituye un error de implementación, sino un requisito de tamaño de muestra documentado en la literatura econométrica (Hwang y Valls Pereira, 2006, quienes establecen un mínimo de 500 observaciones para una estimación confiable de GARCH(1,1)), requisito que la mayoría de las series macroeconómicas mexicanas, en ventanas equivalentes a los periodos previos a una crisis, no satisface.</p>
+      </div>
+      <div data-lang-content="en">
+        <h2 class="story-heading">Comparison against an independent econometric model (GARCH)</h2>
+        <p>The rising-variance component this analysis evaluates corresponds, conceptually, to the phenomenon GARCH models have captured in financial econometrics since 1982 (Engle) and 1986 (Bollerslev). A GARCH(1,1) model was fit to the same series, and its conditional-volatility signal was compared against the main method's variance signal. In windows where both methods converged to an interpretable result, they agreed, in the majority of cases, on the absence of a significant trend; independently, GARCH also identified no significant signal in any of the crisis episodes evaluated in the backtest.</p>
+        <p>The most significant finding of this exercise, however, was methodological in nature: in 80% of the short windows used in the backtest, the GARCH model failed to converge reliably. This does not constitute an implementation error, but rather a sample-size requirement documented in the econometric literature (Hwang and Valls Pereira, 2006, who establish a minimum of 500 observations for a reliable GARCH(1,1) estimate) — a requirement that most Mexican macroeconomic series, in windows equivalent to pre-crisis periods, do not meet.</p>
+      </div>
+    </section>
+
+    <!-- 8. FUTURE WORK -->
+    <section class="story">
+      <p class="story-label" data-lang-content="es">08 — LÍNEAS DE TRABAJO FUTURO</p>
+      <p class="story-label" data-lang-content="en">08 — DIRECTIONS FOR FUTURE WORK</p>
+
+      <div data-lang-content="es">
+        <h2 class="story-heading">De un enfoque agnóstico a uno dirigido por tipo de crisis</h2>
+        <p>La explicación más probable, y de mayor utilidad práctica, para el resultado nulo es que se evaluaron variables genéricas frente a crisis con mecanismos distintos entre sí. La literatura de alerta temprana asigna variables específicas según el tipo de crisis, en lugar de un conjunto único aplicable a todos los casos. Esa es la siguiente línea de trabajo:</p>
+      </div>
+      <div data-lang-content="en">
+        <h2 class="story-heading">From an agnostic approach to one directed by crisis type</h2>
+        <p>The most likely explanation for the null result, and the one with the greatest practical utility, is that generic variables were evaluated against crises driven by distinct underlying mechanisms. The early-warning literature assigns specific variables according to crisis type, rather than a single set applicable to all cases. This is the next line of work:</p>
       </div>
 
       <div class="table-wrap">
@@ -348,10 +390,10 @@
             <th data-lang-content="es">Tipo de crisis (referencia)</th><th data-lang-content="en">Crisis type (reference)</th>
             <th data-lang-content="es">Estado</th><th data-lang-content="en">Status</th>
           </tr>
-          <tr><td>Cambiaria — Kaminsky, Lizondo &amp; Reinhart (1998)</td><td><span class="tag-yes" data-lang-content="es">Cubierta</span><span class="tag-yes" data-lang-content="en">Covered</span></td></tr>
+          <tr><td>Cambiaria — Kaminsky, Lizondo &amp; Reinhart (1998)</td><td><span class="tag-yes" data-lang-content="es">Evaluada — resultado nulo (§06)</span><span class="tag-yes" data-lang-content="en">Evaluated — null result (§06)</span></td></tr>
           <tr><td>Inflacionaria — Reinhart &amp; Rogoff (2009)</td><td><span class="tag-yes" data-lang-content="es">Cubierta</span><span class="tag-yes" data-lang-content="en">Covered</span></td></tr>
           <tr><td>Recesión — criterio NBER</td><td><span class="tag-partial" data-lang-content="es">Parcial</span><span class="tag-partial" data-lang-content="en">Partial</span></td></tr>
-          <tr><td>Deuda soberana — Reinhart &amp; Rogoff (2009)</td><td><span class="tag-partial" data-lang-content="es">Rastreada, fuera del índice</span><span class="tag-partial" data-lang-content="en">Tracked, outside index</span></td></tr>
+          <tr><td>Deuda soberana — Reinhart &amp; Rogoff (2009)</td><td><span class="tag-partial" data-lang-content="es">Monitoreada, fuera del índice</span><span class="tag-partial" data-lang-content="en">Monitored, outside index</span></td></tr>
           <tr><td>Bancaria — Schularick &amp; Taylor (2012)</td><td><span class="tag-no" data-lang-content="es">Sin cobertura</span><span class="tag-no" data-lang-content="en">Not covered</span></td></tr>
           <tr><td>Sudden stop — Calvo (1998)</td><td><span class="tag-no" data-lang-content="es">Sin cobertura</span><span class="tag-no" data-lang-content="en">Not covered</span></td></tr>
           <tr><td>Términos de intercambio — Hamilton (1983, 2003)</td><td><span class="tag-no" data-lang-content="es">Sin cobertura</span><span class="tag-no" data-lang-content="en">Not covered</span></td></tr>
@@ -359,16 +401,16 @@
       </div>
     </section>
 
-    <!-- 7. GO DEEPER -->
+    <!-- 9. ADDITIONAL DOCUMENTATION -->
     <section class="story">
-      <p class="story-label" data-lang-content="es">07 — PARA PROFUNDIZAR</p>
-      <p class="story-label" data-lang-content="en">07 — GO DEEPER</p>
+      <p class="story-label" data-lang-content="es">09 — DOCUMENTACIÓN ADICIONAL</p>
+      <p class="story-label" data-lang-content="en">09 — ADDITIONAL DOCUMENTATION</p>
 
       <div data-lang-content="es">
-        <p>Esta página resume el arco completo del trabajo. La metodología completa —fórmulas exactas, las 18 referencias citadas, y todas las limitaciones documentadas con el mismo nivel de detalle— vive en el repositorio, junto con el código fuente completo y su historial de decisiones.</p>
+        <p>Esta página resume el desarrollo completo del proyecto. La metodología detallada —incluyendo fórmulas exactas, referencias bibliográficas completas y todas las limitaciones documentadas con el mismo nivel de detalle— está disponible en el repositorio, junto con el código fuente y el historial de decisiones metodológicas.</p>
       </div>
       <div data-lang-content="en">
-        <p>This page summarizes the project's full arc. The complete methodology — exact formulas, all 18 references cited, and every limitation documented with the same level of detail — lives in the repository, along with the full source code and its decision history.</p>
+        <p>This page summarizes the project's complete development. Detailed methodology — including exact formulas, full bibliographic references, and every limitation documented with the same level of detail — is available in the repository, along with the source code and the record of methodological decisions.</p>
       </div>
     </section>
 
