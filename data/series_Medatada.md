@@ -552,6 +552,161 @@ independent of any single series.
    building the directed, crisis-type-specific detection layer (the 7
    crisis-type groups with dedicated literature-backed variables) over
    further investment in the agnostic layer's current design.
+
+20. **ARMA order selection for CSD surrogates was migrated from a fixed,
+   undefended ARMA(1,1) to an AICc-based adaptive search — sample-size
+   scaled, not applied blindly to every series alike.**
+
+   The original `(1,1)` default (see #16) was never validated against
+   any series-specific evidence. Two candidate fixes were considered
+   and one was rejected before landing on the final design:
+
+   - **Rejected: Schwert's (1989) rule** for maximum lag length
+     (`12*(T/100)^0.25`) — designed specifically for augmented
+     Dickey-Fuller unit-root test lag selection, not general ARMA
+     order selection. Applying it directly would have suggested
+     absurd orders for small samples (e.g., order 9 for this
+     project's 41-observation quarterly GDP series) — the same class
+     of cross-context tool misapplication already caught in this
+     project's Chow-test (#11) and SOC-vs-critical-transitions
+     episodes.
+   - **Adopted:** `max_arma_order_for_sample(n)` caps the AICc grid
+     search at `min(5, n // 15)` — a conservative, sample-size-aware
+     heuristic (not attributed to one canonical source), combined
+     with a global practicality ceiling of 5. AICc (not plain AIC) is
+     used for the comparison, correcting for small-sample bias
+     (Hurvich, C. M., & Tsai, C.-L. (1989). Regression and time series
+     model selection in small samples. *Biometrika*, 76(2), 297-307).
+     Ljung-Box adequacy lags are similarly sample-size-scaled via
+     `h = min(10, T/5)`, following Hyndman's own 2023 revision of his
+     earlier fixed h=10 rule (Hyndman & Athanasopoulos, 2018), after a
+     power-simulation study showed the fixed version performs poorly
+     for small T (https://robjhyndman.com/hyndsight/ljung-box-test/).
+
+   **Measured impact:** re-running the full pipeline with adaptive
+   order selection moved the composite index from 12.7 to **11.4**.
+   The driver: `international_reserves`'s partial trend signal (one
+   of two indicators significant) disappeared once the correctly
+   selected order replaced the fixed `(1,1)` — the "Estabilidad
+   externa" domain score dropped from 12.5 to 6.2 as a direct result.
+   This confirms the fixed order was materially affecting conclusions,
+   not just a cosmetic simplification.
+
+   **M1's ARMA(4,5) selection was independently validated, not assumed
+   correct by default:** its selected order landed at the search
+   ceiling (`max_arma_order_for_sample(121) = 5`), which could indicate
+   either a genuinely richer short-term structure or overfitting at
+   the boundary of the search space. Comparison against a simple
+   ARMA(1,1): AICc difference of **-12.34** in favor of (4,5) (well
+   above the ~2-point threshold conventionally used to distinguish a
+   real improvement from noise), and Ljung-Box on the (4,5) residuals
+   passed cleanly (p=0.95). The added complexity is genuinely
+   justified for this series, not an artifact of a wide search grid —
+   though note the selected order sits exactly at the adaptive cap,
+   so a higher true order cannot be ruled out; not pursued further.
+
+21. **GARCH(1,1) conditional-volatility trend comparison against CSD's
+   variance signal was implemented and run — addressing the open
+   limitation noted since the project's methodology was first written
+   (rising variance is exactly what GARCH models, Engle 1982;
+   Bollerslev 1986, were built to capture, and this had never been
+   tested until now).**
+
+   Design: the same AICc-selected ARMA order used for CSD surrogates
+   (#20) is fit first to pre-whiten each series' mean structure, then
+   GARCH(1,1) with `mean="Zero"` is fit to the ARMA residuals — this
+   two-step design was adopted after an earlier `mean="AR", lags=1`
+   approach produced degenerate persistence estimates (pinned at 1.0)
+   by forcing unexplained mean structure into the variance equation.
+   Significance of the conditional-volatility trend uses the same
+   Phipson & Smyth (2010) empirical p-value approach as CSD, but with
+   the null distribution generated from the FITTED GARCH model's own
+   native simulator (synthetic, trend-free by construction), not
+   borrowed ARMA surrogates.
+
+   **On `full_history`:** persistence (α+β) was pinned at ~1.000 for 5
+   of 9 series, with an `InitialValueWarning` confirming a
+   misspecified, non-stationary fit. Diagnosed via Lamoureux & Lastrapes
+   (1990, *Journal of Business & Economic Statistics*, 8(2), 225-234):
+   fitting a single GARCH model across a sample that spans genuine
+   regime changes (fixed vs. floating exchange rate, 1994, 2008, COVID)
+   mechanically inflates apparent persistence — the same root-cause
+   pattern as the Chow-test misspecification in #11, recurring in a
+   different model class.
+
+   **On `rolling_10y` (the reliable comparison):** among series with
+   non-degenerate fits, GARCH and CSD's `variance_trend_tau` agreed on
+   3 of 4 clean cases (target_rate, international_reserves,
+   unemployment_rate all agreed "no rising trend"; `cetes_28d` was the
+   one genuine disagreement — GARCH flagged rising volatility, CSD did
+   not). `cpi` failed to converge with **α pinned at exactly 0** (a
+   corner solution, not an error) under two independent mean
+   specifications (`mean="AR",lags=1` and the AICc-selected ARMA(1,1))
+   — a robust finding: no ARCH effect exists beyond INPC's own
+   short-term mean structure. `m1` and `quarterly_gdp` also failed to
+   converge (insufficient sample/complexity mismatch).
+
+22. **GARCH was cross-validated against the same pre-crisis backtest
+   windows used for CSD (2008-09, 2014-16, 1994 Tequila) — result: 0
+   of 4 valid comparisons significant after Benjamini-Hochberg
+   correction, consistent with CSD's own null backtest result (#19),
+   not contradicting it.**
+
+   `fx_rate_fix` (1994 Tequila) showed a promising raw p-value of
+   0.0255 before correction; after batching with the other 3 valid
+   comparisons and applying BH, it rose to 0.102 — the same discipline
+   (never decide significance before batch correction) that has
+   already been enforced elsewhere in this project (#12, #17).
+
+   **16 of 20 combinations (80%) failed to converge**, overwhelmingly
+   with the "alpha pinned at 0" corner solution. This is not an
+   implementation defect — it is a well-documented, precisely
+   quantified small-sample limitation of GARCH maximum-likelihood
+   estimation:
+
+   > Hwang, S., & Valls Pereira, P. L. (2006). Small sample properties
+   > of GARCH estimates and persistence. *The European Journal of
+   > Finance*, 12(6-7), 473-494.
+
+   Their finding: at least 250 observations are needed for a reliable
+   ARCH(1) fit, and 500 for GARCH(1,1); below that, estimates are
+   negatively biased and convergence under Bollerslev's non-negativity
+   constraints frequently fails outright. This project's backtest
+   windows (32-528 observations, most well under 200) are
+   overwhelmingly below this threshold — explaining, with one external,
+   independently-derived cause, both this backtest's convergence
+   failures AND the earlier `rolling_10y` failures for `m1` and `cpi`
+   (121 observations, also below the ARCH(1) minimum of 250).
+
+   **Conclusion:** GARCH(1,1), as implemented here, is not a suitable
+   tool for short-window (pre-crisis backtest style) analysis of
+   Mexican macroeconomic series, given realistic data availability —
+   a genuine, literature-grounded methodological finding, not a
+   failure to be patched further. It remains usable, with caveats, on
+   `rolling_10y`-length windows for series with sufficient observations
+   (daily/weekly series comfortably clear the threshold; most monthly
+   and all quarterly series in this project's panel do not).
+   **GARCH is not integrated into the production pipeline** — its role
+   remains strictly as a cross-validation exercise against CSD,
+   documented here and in `METHODOLOGY.md`, not as a second production
+   signal.
+
+23. **Warning suppression (`src/analysis/_quiet_warnings.py`) filters
+   ONLY four specific, individually diagnosed benign warning messages
+   by exact text match, not by broad category or source module** —
+   deliberately, to avoid hiding a future, genuinely new warning that
+   might signal a real problem (the same instinct that surfaced the
+   `cpi` alpha=0 corner solution and the M1 ARMA(4,5) boundary case).
+   Imported once, for its side effect, at the top of each runnable
+   entry point (`run_analysis.py`, `run_backtest.py`,
+   `run_garch_comparison.py`).
+
+24. **`src/analysis/run_backtest.py` was added as a proper runnable
+   entry point**, matching the `python3 -m src.analysis.run_X` pattern
+   already used by `run_analysis.py`, `run_reporting.py`, and
+   `run_garch_comparison.py`. `backtest.py` itself never had one —
+   it was always invoked via an inline `python3 -c "..."` snippet, an
+   inconsistency found and fixed 2026-09-17.
 ---
 
 ## Appendix: Confirmed Data Ranges (as of first successful pull, 2026-09-12)
