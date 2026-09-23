@@ -1,0 +1,22 @@
+crisis_name,series_key,n_points,converged,skip_reason,garch_tau,garch_p,garch_significant_rising,garch_p_adjusted
+2008_financial_crisis,fx_rate_fix,528.0,True,,-0.297,0.97,False,0.9745
+2008_financial_crisis,cetes_28d,,False,only 102 pre-crisis points,,,False,
+2008_financial_crisis,target_rate,,False,only 155 pre-crisis points,,,False,
+2008_financial_crisis,international_reserves,128.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(1, 0) pre-whitening",,,False,
+2008_financial_crisis,m1,48.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(1, 0) pre-whitening",,,False,
+2008_financial_crisis,m2,48.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(1, 0) pre-whitening",,,False,
+2008_financial_crisis,quarterly_gdp,32.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(2, 2) pre-whitening",,,False,
+2008_financial_crisis,unemployment_rate,44.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(0, 1) pre-whitening",,,False,
+2008_financial_crisis,cpi,48.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(2, 0) pre-whitening",,,False,
+2014_oil_collapse,fx_rate_fix,528.0,True,,-0.346,0.8306,False,0.9745
+2014_oil_collapse,cetes_28d,128.0,True,,-0.271,0.9745,False,0.9745
+2014_oil_collapse,target_rate,528.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(1, 0) pre-whitening",,,False,
+2014_oil_collapse,international_reserves,128.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(4, 2) pre-whitening",,,False,
+2014_oil_collapse,m1,48.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(3, 2) pre-whitening",,,False,
+2014_oil_collapse,m2,48.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(1, 0) pre-whitening",,,False,
+2014_oil_collapse,quarterly_gdp,32.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(2, 2) pre-whitening",,,False,
+2014_oil_collapse,unemployment_rate,48.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(1, 0) pre-whitening",,,False,
+2014_oil_collapse,cpi,48.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(2, 0) pre-whitening",,,False,
+1994_tequila,fx_rate_fix,528.0,True,,0.203,0.0255,False,0.102
+1994_tequila,quarterly_gdp,32.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(2, 2) pre-whitening",,,False,
+1994_tequila,cpi,48.0,False,"alpha pinned at 0 (corner solution) — no ARCH effect beyond ARMA(3, 0) pre-whitening",,,False,

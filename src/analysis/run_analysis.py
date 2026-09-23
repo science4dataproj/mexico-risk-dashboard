@@ -12,7 +12,7 @@ Runs the full analysis pipeline over every series in the unified panel:
 
 Output: data/processed/analysis_results.csv
 """
-
+from src.analysis import _quiet_warnings  # noqa: F401
 from pathlib import Path
 
 import pandas as pd

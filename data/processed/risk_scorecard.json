@@ -1,14 +1,14 @@
 {
-  "generated_at": "2026-09-17T02:20:15.603114+00:00",
-  "composite_score": 12.7,
+  "generated_at": "2026-09-23T02:58:32.198510+00:00",
+  "composite_score": 11.4,
   "composite_label": {
     "status_id": "stable",
     "es": "Sin cambios relevantes",
     "en": "No notable change"
   },
   "composite_narrative": {
-    "es": "El índice compuesto es 12.7, promedio no ponderado de 5 dominios. Ninguno de los 5 dominios evaluados muestra actualmente una señal de fragilidad a vigilar o fuerte.",
-    "en": "The composite index is 12.7, an unweighted average across 5 domains. None of the 5 evaluated domains currently show a monitor-level or strong fragility signal."
+    "es": "El índice compuesto es 11.4, promedio no ponderado de 5 dominios. Ninguno de los 5 dominios evaluados muestra actualmente una señal de fragilidad a vigilar o fuerte.",
+    "en": "The composite index is 11.4, an unweighted average across 5 domains. None of the 5 evaluated domains currently show a monitor-level or strong fragility signal."
   },
   "composite_narrative_stakeholder": {
     "es": "En conjunto, los indicadores que monitorea este panel se están comportando de forma predecible. No hay, por ahora, una señal generalizada de que la economía esté perdiendo capacidad de absorber choques.",
@@ -21,17 +21,17 @@
         "es": "Estabilidad externa",
         "en": "External stability"
       },
-      "score": 12.5,
+      "score": 6.2,
       "label": {
         "status_id": "stable",
         "es": "Sin cambios relevantes",
         "en": "No notable change"
       },
-      "n_signals_active": 2,
+      "n_signals_active": 1,
       "n_signals_possible": 12,
       "narrative": {
-        "es": "El tipo de cambio está en un nivel históricamente bajo (percentil 4), sin una tendencia estadísticamente significativa de estabilidad o fragilidad. Las reservas internacionales están en un nivel históricamente alto (percentil 100), mostrando una tendencia significativa solo en uno de los dos indicadores de estabilidad, sin un patrón consistente.",
-        "en": "The exchange rate is at a historically low level (4th percentile), showing no statistically significant trend toward stability or fragility. International reserves are at a historically high level (100th percentile), showing a significant trend in only one of the two stability indicators, with no consistent pattern."
+        "es": "El tipo de cambio está en un nivel históricamente bajo (percentil 4), sin una tendencia estadísticamente significativa de estabilidad o fragilidad. Las reservas internacionales están en un nivel históricamente alto (percentil 100), sin una tendencia estadísticamente significativa de estabilidad o fragilidad.",
+        "en": "The exchange rate is at a historically low level (4th percentile), showing no statistically significant trend toward stability or fragility. International reserves are at a historically high level (100th percentile), showing no statistically significant trend toward stability or fragility."
       },
       "narrative_stakeholder": {
         "es": "El peso y las reservas del país se están comportando de forma predecible. No hay señales, por ahora, de que México esté perdiendo su capacidad de amortiguar un choque externo.",

@@ -10,6 +10,8 @@ a single fit — see SERIES_METADATA.md Decisions Log for the full_history
 diagnosis this follows up on.
 """
 
+from src.analysis import _quiet_warnings  # noqa: F401
+
 import pandas as pd
 from src.analysis.garch_comparison import fit_garch_and_test_trend
 
